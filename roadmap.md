@@ -73,12 +73,12 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 
 ## 4. Milestones
 
-### M0 — Project scaffold *(foundation)*
-- [ ] `django-admin startproject`, app split (`accounts`, `records`, `orders`, `documents`, `dashboard`).
-- [ ] Settings split (base/dev/prod), `.env`, `requirements.txt`, `.gitignore`.
-- [ ] Postgres + SQLite config, initial migrations.
-- [ ] Base template, static pipeline, health-check endpoint.
-- [ ] **Fill in README.md** (Task/Description/Installation/Usage).
+### M0 — Project scaffold *(foundation)* ✅
+- [x] `django-admin startproject`, app split (`accounts`, `records`, `orders`, `documents`, `dashboard`).
+- [x] Settings split (base/dev/prod), `.env`, `requirements.txt`, `.gitignore`.
+- [x] Postgres + SQLite config, initial migrations.
+- [x] Base template, static pipeline, health-check endpoint.
+- [x] **Fill in README.md** (Task/Description/Installation/Usage).
 
 ### M1 — Auth, roles & approval gate
 - [ ] Custom user model with `role` + `is_approved`.
