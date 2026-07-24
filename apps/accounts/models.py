@@ -24,6 +24,13 @@ class User(AbstractUser):
         default=False,
         help_text="Set by an administrator to activate the account.",
     )
+    is_rejected = models.BooleanField(
+        default=False,
+        help_text=(
+            "Set by an administrator to decline the registration. Kept as a "
+            "record instead of deleting the account."
+        ),
+    )
 
     @property
     def is_patient(self):

@@ -43,14 +43,16 @@ class PendingApprovalsView(AdminRequiredMixin, ListView):
     context_object_name = "pending_users"
 
     def get_queryset(self):
-        return User.objects.filter(is_approved=False, is_staff=False).order_by(
-            "date_joined"
-        )
+        return User.objects.filter(
+            is_approved=False, is_rejected=False, is_staff=False
+        ).order_by("date_joined")
 
 
 class ApproveUserView(AdminRequiredMixin, View):
     def post(self, request, pk):
-        user = get_object_or_404(User, pk=pk, is_approved=False, is_staff=False)
+        user = get_object_or_404(
+            User, pk=pk, is_approved=False, is_rejected=False, is_staff=False
+        )
         user.is_approved = True
         user.save(update_fields=["is_approved"])
         messages.success(request, f"Approved {user.username}.")
@@ -59,8 +61,11 @@ class ApproveUserView(AdminRequiredMixin, View):
 
 class RejectUserView(AdminRequiredMixin, View):
     def post(self, request, pk):
-        user = get_object_or_404(User, pk=pk, is_approved=False, is_staff=False)
-        username = user.username
-        user.delete()
-        messages.info(request, f"Rejected and removed {username}.")
+        user = get_object_or_404(
+            User, pk=pk, is_approved=False, is_rejected=False, is_staff=False
+        )
+        user.is_rejected = True
+        user.is_active = False
+        user.save(update_fields=["is_rejected", "is_active"])
+        messages.info(request, f"Rejected {user.username}.")
         return redirect("accounts:approvals")

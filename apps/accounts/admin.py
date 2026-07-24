@@ -6,15 +6,15 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ("username", "email", "role", "is_approved", "is_active")
-    list_filter = ("role", "is_approved", "is_active")
+    list_display = ("username", "email", "role", "is_approved", "is_rejected", "is_active")
+    list_filter = ("role", "is_approved", "is_rejected", "is_active")
     actions = ("approve_users",)
 
     fieldsets = UserAdmin.fieldsets + (
-        ("CHA", {"fields": ("role", "is_approved")}),
+        ("CHA", {"fields": ("role", "is_approved", "is_rejected")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ("CHA", {"fields": ("role", "is_approved")}),
+        ("CHA", {"fields": ("role", "is_approved", "is_rejected")}),
     )
 
     @admin.action(description="Approve selected users")

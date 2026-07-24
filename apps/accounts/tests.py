@@ -92,4 +92,13 @@ class ApprovalWorkflowTests(TestCase):
             reverse("accounts:reject", args=[self.pending_user.pk])
         )
         self.assertRedirects(response, reverse("accounts:approvals"))
-        self.assertFalse(User.objects.filter(pk=self.pending_user.pk).exists())
+        self.pending_user.refresh_from_db()
+        self.assertTrue(self.pending_user.is_rejected)
+        self.assertFalse(self.pending_user.is_active)
+        self.assertFalse(self.pending_user.is_approved)
+
+    def test_rejected_user_disappears_from_approvals_queue(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse("accounts:reject", args=[self.pending_user.pk]))
+        response = self.client.get(reverse("accounts:approvals"))
+        self.assertNotIn(self.pending_user, response.context["pending_users"])
