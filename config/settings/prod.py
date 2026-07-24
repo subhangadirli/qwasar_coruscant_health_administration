@@ -8,6 +8,11 @@ DEBUG = False
 # ALLOWED_HOSTS, SECRET_KEY, DATABASE_URL, DOCUMENT_ENCRYPTION_KEY,
 # CSRF_TRUSTED_ORIGINS are all read from the environment in base.py.
 
+# Fail fast rather than silently signing sessions/CSRF tokens with the
+# publicly-known scaffold default.
+if SECRET_KEY == "django-insecure-change-me-in-prod":
+    raise RuntimeError("SECRET_KEY must be set in production.")
+
 # Security hardening.
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
