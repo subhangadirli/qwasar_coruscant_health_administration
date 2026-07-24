@@ -50,7 +50,7 @@ class PendingApprovalsView(AdminRequiredMixin, ListView):
 
 class ApproveUserView(AdminRequiredMixin, View):
     def post(self, request, pk):
-        user = get_object_or_404(User, pk=pk, is_approved=False)
+        user = get_object_or_404(User, pk=pk, is_approved=False, is_staff=False)
         user.is_approved = True
         user.save(update_fields=["is_approved"])
         messages.success(request, f"Approved {user.username}.")
