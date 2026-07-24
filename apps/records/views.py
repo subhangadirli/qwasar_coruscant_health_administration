@@ -4,16 +4,24 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count, Max, Q
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    FormView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import PatientDoctorAssignment, Role
 
-from .forms import HealthReadingForm, ReadingCSVUploadForm
+from .forms import HealthReadingForm, ReadingCSVUploadForm, ReportForm
 from .ingest import parse_reading_row
 from .models import (
     DeviceToken,
@@ -262,6 +270,87 @@ class DoctorPatientDetailView(AssignedPatientMixin, DetailView):
             }
         )
         return context
+
+
+class DoctorReportsMixin(DoctorRequiredMixin):
+    """Restrict reports to the ones this doctor wrote."""
+
+    def get_queryset(self):
+        return self.request.user.authored_reports.select_related("patient")
+
+
+class DoctorReportsView(DoctorReportsMixin, ListView):
+    template_name = "records/doctor_report_list.html"
+    context_object_name = "reports"
+    paginate_by = 25
+
+
+class DoctorReportDetailView(DoctorReportsMixin, DetailView):
+    template_name = "records/doctor_report_detail.html"
+    context_object_name = "report"
+
+
+class WriteReportView(AssignedPatientMixin, CreateView):
+    """Draft a report or prescription for an assigned patient."""
+
+    form_class = ReportForm
+    template_name = "records/report_form.html"
+
+    def form_valid(self, form):
+        form.instance.patient = self.get_patient()
+        form.instance.doctor = self.request.user
+        messages.success(self.request, "Draft saved.")
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["patient"] = self.get_patient()
+        return context
+
+    def get_success_url(self):
+        return reverse("records:doctor_report_detail", args=[self.object.pk])
+
+
+class EditReportView(DoctorReportsMixin, UpdateView):
+    """Revise a draft.
+
+    Published reports are deliberately absent from this queryset: once the
+    patient can read a report it is part of their record, and correcting it
+    means writing a follow-up rather than editing history.
+    """
+
+    form_class = ReportForm
+    template_name = "records/report_form.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(status=ReportStatus.DRAFT)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["patient"] = self.object.patient
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, "Draft updated.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("records:doctor_report_detail", args=[self.object.pk])
+
+
+class PublishReportView(DoctorRequiredMixin, View):
+    """Release a draft to the patient."""
+
+    def post(self, request, pk):
+        report = get_object_or_404(
+            request.user.authored_reports.filter(status=ReportStatus.DRAFT),
+            pk=pk,
+        )
+        report.publish()
+        messages.success(
+            request, f"Published to {report.patient.username}."
+        )
+        return redirect("records:doctor_report_detail", pk=report.pk)
 
 
 def _bearer_token(request):

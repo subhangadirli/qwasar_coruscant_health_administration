@@ -4,7 +4,7 @@ import io
 from django import forms
 
 from .ingest import parse_reading_row
-from .models import HealthReading, ReadingSource
+from .models import HealthReading, ReadingSource, Report
 
 CSV_REQUIRED_COLUMNS = {"metric", "value", "recorded_at"}
 MAX_CSV_BYTES = 1024 * 1024
@@ -28,6 +28,25 @@ class HealthReadingForm(forms.ModelForm):
             ),
         }
         help_texts = {"unit": "Leave blank to use the standard unit."}
+
+
+class ReportForm(forms.ModelForm):
+    """A doctor writing a report or prescription.
+
+    ``patient``, ``doctor`` and ``status`` are absent on purpose: the first
+    two come from the URL and the session so a submitted field cannot file
+    a report against another patient or under another doctor's name, and
+    publishing is a separate deliberate action.
+    """
+
+    class Meta:
+        model = Report
+        fields = ("kind", "title", "body")
+        widgets = {"body": forms.Textarea(attrs={"rows": 12})}
+        labels = {"kind": "Type"}
+        help_texts = {
+            "body": "Saved as a draft; the patient sees it only once published.",
+        }
 
 
 class ReadingCSVUploadForm(forms.Form):

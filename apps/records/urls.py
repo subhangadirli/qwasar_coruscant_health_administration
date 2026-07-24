@@ -20,6 +20,31 @@ urlpatterns = [
         views.DoctorPatientDetailView.as_view(),
         name="patient_detail",
     ),
+    path(
+        "patients/<int:pk>/reports/new/",
+        views.WriteReportView.as_view(),
+        name="write_report",
+    ),
+    path(
+        "authored-reports/",
+        views.DoctorReportsView.as_view(),
+        name="doctor_reports",
+    ),
+    path(
+        "authored-reports/<int:pk>/",
+        views.DoctorReportDetailView.as_view(),
+        name="doctor_report_detail",
+    ),
+    path(
+        "authored-reports/<int:pk>/edit/",
+        views.EditReportView.as_view(),
+        name="edit_report",
+    ),
+    path(
+        "authored-reports/<int:pk>/publish/",
+        views.PublishReportView.as_view(),
+        name="publish_report",
+    ),
     path("reports/", views.PatientReportsView.as_view(), name="reports"),
     path(
         "reports/<int:pk>/",

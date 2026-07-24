@@ -109,21 +109,31 @@
   </section>
 
   <section class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-    <h2 class="text-lg font-semibold text-slate-900">Reports and prescriptions</h2>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="text-lg font-semibold text-slate-900">Reports and prescriptions</h2>
+      <a href="{% url 'records:write_report' patient.pk %}"
+         class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500">Write report</a>
+    </div>
     {% if reports %}
       <ul class="mt-4 divide-y divide-slate-200">
         {% for report in reports %}
-          <li class="flex flex-wrap items-center gap-2 py-3">
-            <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-              {{ report.get_kind_display }}
-            </span>
-            <span class="font-medium text-slate-800">{{ report.title }}</span>
-            {% if not report.is_published %}
-              <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">Draft</span>
+          <li class="py-3">
+            {% if report.doctor == user %}
+              <a href="{% url 'records:doctor_report_detail' report.pk %}" class="group flex flex-wrap items-center gap-2">
+            {% else %}
+              <div class="flex flex-wrap items-center gap-2">
             {% endif %}
-            <span class="text-sm text-slate-500">
-              Dr. {{ report.doctor.username }} · {{ report.updated_at|date:"M d, Y" }}
-            </span>
+              <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                {{ report.get_kind_display }}
+              </span>
+              {% if not report.is_published %}
+                <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">Draft</span>
+              {% endif %}
+              <span class="font-medium text-slate-800 group-hover:text-emerald-700">{{ report.title }}</span>
+              <span class="text-sm text-slate-500">
+                Dr. {{ report.doctor.username }} · {{ report.updated_at|date:"M d, Y" }}
+              </span>
+            {% if report.doctor == user %}</a>{% else %}</div>{% endif %}
           </li>
         {% endfor %}
       </ul>

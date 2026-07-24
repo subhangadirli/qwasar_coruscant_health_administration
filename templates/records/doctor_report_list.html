@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}My reports · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">My reports</h1>
+  <p class="mt-1 text-sm text-slate-500">Everything you have written, drafts included.</p>
+
+  {% if reports %}
+    <ul class="mt-6 divide-y divide-slate-200">
+      {% for report in reports %}
+        <li class="py-4">
+          <a href="{% url 'records:doctor_report_detail' report.pk %}" class="group block">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                {{ report.get_kind_display }}
+              </span>
+              {% if not report.is_published %}
+                <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">Draft</span>
+              {% endif %}
+              <h2 class="font-semibold text-slate-800 group-hover:text-emerald-700">{{ report.title }}</h2>
+            </div>
+            <p class="mt-1 text-sm text-slate-500">
+              For {{ report.patient.username }} ·
+              {% if report.is_published %}
+                published {{ report.published_at|date:"M d, Y" }}
+              {% else %}
+                last edited {{ report.updated_at|date:"M d, Y" }}
+              {% endif %}
+            </p>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm">
+        {% if page_obj.has_previous %}
+          <a class="text-slate-600 hover:text-slate-900" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="text-slate-600 hover:text-slate-900" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+      You have not written anything yet. Open a patient record to start a report.
+    </p>
+  {% endif %}
+</div>
+{% endblock %}
