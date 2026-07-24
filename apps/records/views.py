@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView, ListView
+from django.views.generic import CreateView, DetailView, FormView, ListView
 
 from apps.accounts.mixins import RoleRequiredMixin
 from apps.accounts.models import Role
@@ -101,3 +101,27 @@ class UploadReadingsCSVView(RoleRequiredMixin, FormView):
         created = form.save(self.request.user)
         messages.success(self.request, f"Imported {len(created)} reading(s).")
         return super().form_valid(form)
+
+
+class PatientReportsMixin(RoleRequiredMixin):
+    """Restrict reports to the ones published for the logged-in patient.
+
+    Scoping the queryset rather than checking after lookup means an
+    unpublished report, or another patient's, is simply a 404.
+    """
+
+    allowed_roles = (Role.PATIENT,)
+
+    def get_queryset(self):
+        return self.request.user.reports.published().select_related("doctor")
+
+
+class PatientReportsView(PatientReportsMixin, ListView):
+    template_name = "records/report_list.html"
+    context_object_name = "reports"
+    paginate_by = 20
+
+
+class PatientReportDetailView(PatientReportsMixin, DetailView):
+    template_name = "records/report_detail.html"
+    context_object_name = "report"

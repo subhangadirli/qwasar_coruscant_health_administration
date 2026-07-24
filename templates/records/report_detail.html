@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ report.title }} · CHA{% endblock %}
+
+{% block content %}
+<article class="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <a href="{% url 'records:reports' %}" class="text-sm text-slate-500 hover:text-slate-700">&larr; All reports</a>
+
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+      {{ report.get_kind_display }}
+    </span>
+    <h1 class="text-2xl font-bold text-slate-900">{{ report.title }}</h1>
+  </div>
+
+  <p class="mt-2 text-sm text-slate-500">
+    Dr. {{ report.doctor.username }} · {{ report.published_at|date:"M d, Y H:i" }}
+  </p>
+
+  <div class="mt-6 whitespace-pre-line leading-relaxed text-slate-700">{{ report.body }}</div>
+</article>
+{% endblock %}

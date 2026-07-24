@@ -8,9 +8,10 @@
     <h2 class="font-semibold text-slate-800">Health readings →</h2>
     <p class="mt-1 text-sm text-slate-500">Upload device data and view trends.</p>
   </a>
-  <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-    <h2 class="font-semibold text-slate-800">Prescriptions</h2>
-    <p class="mt-1 text-sm text-slate-500">Reports written by your doctor. <em>(M2)</em></p>
-  </div>
+  <a href="{% url 'records:reports' %}"
+     class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Prescriptions →</h2>
+    <p class="mt-1 text-sm text-slate-500">Reports written by your doctor.</p>
+  </a>
 </div>
 {% endblock %}

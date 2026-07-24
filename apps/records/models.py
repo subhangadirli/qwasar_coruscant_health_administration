@@ -88,3 +88,73 @@ class HealthReading(models.Model):
 
     def __str__(self):
         return f"{self.get_metric_display()}: {self.value} {self.unit}"
+
+
+class ReportKind(models.TextChoices):
+    REPORT = "report", "Report"
+    PRESCRIPTION = "prescription", "Prescription"
+
+
+class ReportStatus(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    PUBLISHED = "published", "Published"
+
+
+class ReportQuerySet(models.QuerySet):
+    def published(self):
+        return self.filter(status=ReportStatus.PUBLISHED)
+
+
+class Report(models.Model):
+    """A report or prescription written by a doctor about a patient.
+
+    Drafts are invisible to the patient; only a published report is part of
+    what they can read. Authoring is the doctor-side milestone, so for now
+    these are created through the admin.
+    """
+
+    patient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reports",
+        limit_choices_to={"role": Role.PATIENT},
+    )
+    doctor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        # A medical record must outlive staffing changes, so an authoring
+        # doctor cannot be deleted out from under it.
+        on_delete=models.PROTECT,
+        related_name="authored_reports",
+        limit_choices_to={"role": Role.DOCTOR},
+    )
+    kind = models.CharField(
+        max_length=16, choices=ReportKind.choices, default=ReportKind.REPORT
+    )
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    status = models.CharField(
+        max_length=16, choices=ReportStatus.choices, default=ReportStatus.DRAFT
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ReportQuerySet.as_manager()
+
+    class Meta:
+        ordering = ("-published_at", "-created_at")
+        indexes = [
+            models.Index(fields=["patient", "status", "-published_at"]),
+        ]
+
+    @property
+    def is_published(self):
+        return self.status == ReportStatus.PUBLISHED
+
+    def publish(self, when=None):
+        self.status = ReportStatus.PUBLISHED
+        self.published_at = when or timezone.now()
+        self.save(update_fields=["status", "published_at", "updated_at"])
+
+    def __str__(self):
+        return f"{self.get_kind_display()}: {self.title}"

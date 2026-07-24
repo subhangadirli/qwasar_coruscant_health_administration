@@ -12,4 +12,10 @@ urlpatterns = [
         views.UploadReadingsCSVView.as_view(),
         name="upload_readings",
     ),
+    path("reports/", views.PatientReportsView.as_view(), name="reports"),
+    path(
+        "reports/<int:pk>/",
+        views.PatientReportDetailView.as_view(),
+        name="report_detail",
+    ),
 ]

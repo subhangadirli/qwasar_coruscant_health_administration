@@ -5,13 +5,22 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import ProtectedError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.models import Role
 
-from .models import DEFAULT_UNITS, HealthReading, MetricType, ReadingSource
+from .models import (
+    DEFAULT_UNITS,
+    HealthReading,
+    MetricType,
+    ReadingSource,
+    Report,
+    ReportKind,
+    ReportStatus,
+)
 
 User = get_user_model()
 
@@ -381,3 +390,121 @@ class ReadingCSVUploadTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
         self.assertFalse(HealthReading.objects.exists())
+
+
+class ReportModelTests(TestCase):
+    def setUp(self):
+        self.patient = User.objects.create_user(
+            username="pat", password="pw", role=Role.PATIENT, is_approved=True
+        )
+        self.doctor = User.objects.create_user(
+            username="doc", password="pw", role=Role.DOCTOR, is_approved=True
+        )
+
+    def make_report(self, **kwargs):
+        defaults = {
+            "patient": self.patient,
+            "doctor": self.doctor,
+            "title": "Follow-up",
+            "body": "Keep monitoring.",
+        }
+        return Report.objects.create(**{**defaults, **kwargs})
+
+    def test_reports_start_as_unpublished_drafts(self):
+        report = self.make_report()
+        self.assertEqual(report.status, ReportStatus.DRAFT)
+        self.assertFalse(report.is_published)
+        self.assertIsNone(report.published_at)
+
+    def test_publish_sets_status_and_timestamp(self):
+        report = self.make_report()
+        report.publish()
+        report.refresh_from_db()
+        self.assertTrue(report.is_published)
+        self.assertIsNotNone(report.published_at)
+
+    def test_published_queryset_excludes_drafts(self):
+        draft = self.make_report(title="Draft")
+        published = self.make_report(title="Published")
+        published.publish()
+        self.assertEqual(list(Report.objects.published()), [published])
+        self.assertNotIn(draft, Report.objects.published())
+
+    def test_authoring_doctor_cannot_be_deleted(self):
+        self.make_report()
+        with self.assertRaises(ProtectedError):
+            self.doctor.delete()
+
+    def test_deleting_a_patient_removes_their_reports(self):
+        self.make_report()
+        self.patient.delete()
+        self.assertFalse(Report.objects.exists())
+
+
+class PatientReportViewTests(TestCase):
+    def setUp(self):
+        self.patient = User.objects.create_user(
+            username="pat", password="pw", role=Role.PATIENT, is_approved=True
+        )
+        self.doctor = User.objects.create_user(
+            username="doc", password="pw", role=Role.DOCTOR, is_approved=True
+        )
+        self.list_url = reverse("records:reports")
+        self.client.force_login(self.patient)
+
+    def make_report(self, published=True, **kwargs):
+        defaults = {
+            "patient": self.patient,
+            "doctor": self.doctor,
+            "title": "Follow-up",
+            "body": "Keep monitoring.",
+        }
+        report = Report.objects.create(**{**defaults, **kwargs})
+        if published:
+            report.publish()
+        return report
+
+    def detail_url(self, report):
+        return reverse("records:report_detail", args=[report.pk])
+
+    def test_published_report_is_listed_and_readable(self):
+        report = self.make_report(kind=ReportKind.PRESCRIPTION)
+        listing = self.client.get(self.list_url)
+        self.assertIn(report, listing.context["reports"])
+        detail = self.client.get(self.detail_url(report))
+        self.assertEqual(detail.status_code, 200)
+        self.assertContains(detail, "Keep monitoring.")
+
+    def test_draft_is_hidden_from_the_list(self):
+        draft = self.make_report(published=False)
+        self.assertNotIn(draft, self.client.get(self.list_url).context["reports"])
+
+    def test_draft_detail_is_not_found(self):
+        draft = self.make_report(published=False)
+        self.assertEqual(self.client.get(self.detail_url(draft)).status_code, 404)
+
+    def test_another_patients_report_is_not_found(self):
+        other = User.objects.create_user(
+            username="other", password="pw", role=Role.PATIENT, is_approved=True
+        )
+        theirs = self.make_report(patient=other)
+        self.assertNotIn(theirs, self.client.get(self.list_url).context["reports"])
+        self.assertEqual(self.client.get(self.detail_url(theirs)).status_code, 404)
+
+    def test_doctor_cannot_use_the_patient_report_pages(self):
+        report = self.make_report()
+        self.client.force_login(self.doctor)
+        self.assertEqual(self.client.get(self.list_url).status_code, 403)
+        self.assertEqual(self.client.get(self.detail_url(report)).status_code, 403)
+
+    def test_anonymous_is_redirected_to_login(self):
+        self.client.logout()
+        response = self.client.get(self.list_url)
+        self.assertRedirects(
+            response, f"{reverse('accounts:login')}?next={self.list_url}"
+        )
+
+    def test_empty_state_is_shown(self):
+        self.assertContains(
+            self.client.get(self.list_url), "Nothing from your doctor yet"
+        )

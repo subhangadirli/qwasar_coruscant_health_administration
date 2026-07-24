@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Reports and prescriptions · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">Reports and prescriptions</h1>
+  <p class="mt-1 text-sm text-slate-500">Written for you by your doctor.</p>
+
+  {% if reports %}
+    <ul class="mt-6 divide-y divide-slate-200">
+      {% for report in reports %}
+        <li class="py-4">
+          <a href="{% url 'records:report_detail' report.pk %}" class="group block">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                {{ report.get_kind_display }}
+              </span>
+              <h2 class="font-semibold text-slate-800 group-hover:text-emerald-700">{{ report.title }}</h2>
+            </div>
+            <p class="mt-1 text-sm text-slate-500">
+              Dr. {{ report.doctor.username }} · {{ report.published_at|date:"M d, Y" }}
+            </p>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm">
+        {% if page_obj.has_previous %}
+          <a class="text-slate-600 hover:text-slate-900" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="text-slate-600 hover:text-slate-900" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+      Nothing from your doctor yet.
+    </p>
+  {% endif %}
+</div>
+{% endblock %}
