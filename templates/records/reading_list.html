@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}My readings · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">My readings</h1>
+      <p class="mt-1 text-sm text-slate-500">Health data uploaded from your device.</p>
+    </div>
+    <form method="get" class="flex items-center gap-2">
+      <label for="metric" class="text-sm text-slate-500">Metric</label>
+      <select id="metric" name="metric"
+              class="rounded-lg border-slate-300 bg-white px-3 py-1.5 text-sm shadow-sm">
+        <option value="">All metrics</option>
+        {% for value, label in metric_choices %}
+          <option value="{{ value }}" {% if value == selected_metric %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit"
+              class="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700">Filter</button>
+    </form>
+  </div>
+
+  {% if readings %}
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="text-slate-500">
+          <tr class="border-b">
+            <th class="py-2">Metric</th>
+            <th class="py-2">Value</th>
+            <th class="py-2">Recorded</th>
+            <th class="py-2">Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reading in readings %}
+            <tr class="border-b last:border-0">
+              <td class="py-3 font-medium text-slate-800">{{ reading.get_metric_display }}</td>
+              <td class="py-3 tabular-nums text-slate-700">{{ reading.value }} {{ reading.unit }}</td>
+              <td class="py-3 text-slate-500">{{ reading.recorded_at|date:"M d, Y H:i" }}</td>
+              <td class="py-3 text-slate-500">{{ reading.get_source_display }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm">
+        {% if page_obj.has_previous %}
+          <a class="text-slate-600 hover:text-slate-900"
+             href="?{% if selected_metric %}metric={{ selected_metric }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="text-slate-600 hover:text-slate-900"
+             href="?{% if selected_metric %}metric={{ selected_metric }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+      No readings yet.
+    </p>
+  {% endif %}
+</div>
+{% endblock %}
