@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Register · CHA{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">Create an account</h1>
+  <p class="mt-1 text-sm text-slate-500">
+    Patients and doctors register here. An administrator must approve your
+    account before you can log in to your dashboard.
+  </p>
+
+  <form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <p class="mt-1 text-xs text-red-600">{{ field.errors|striptags }}</p>
+        {% endif %}
+        {% if field.help_text %}
+          <p class="mt-1 text-xs text-slate-400">{{ field.help_text|safe }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-500">
+      Register
+    </button>
+  </form>
+
+  <p class="mt-4 text-sm text-slate-500">
+    Already registered? <a href="{% url 'accounts:login' %}" class="text-emerald-600 hover:underline">Log in</a>
+  </p>
+</div>
+
+<style>
+  input, select { width:100%; border:1px solid #cbd5e1; border-radius:0.5rem; padding:0.5rem 0.75rem; margin-top:0.25rem; background:#fff; }
+  input:focus, select:focus { outline:2px solid #10b981; outline-offset:1px; }
+</style>
+{% endblock %}

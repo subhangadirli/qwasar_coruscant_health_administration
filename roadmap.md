@@ -80,12 +80,12 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] Base template, static pipeline, health-check endpoint.
 - [x] **Fill in README.md** (Task/Description/Installation/Usage).
 
-### M1 — Auth, roles & approval gate
-- [ ] Custom user model with `role` + `is_approved`.
-- [ ] Registration flows for patient & doctor (pending state).
-- [ ] Admin approval/rejection UI.
-- [ ] RBAC middleware/mixins; login/logout; role-based redirect to dashboards.
-- [ ] Tests: registration, approval gate, access control.
+### M1 — Auth, roles & approval gate ✅
+- [x] Custom user model with `role` + `is_approved`.
+- [x] Registration flows for patient & doctor (pending state).
+- [x] Admin approval/rejection UI.
+- [x] RBAC middleware/mixins; login/logout; role-based redirect to dashboards.
+- [x] Tests: registration, approval gate, access control.
 
 ### M2 — Patient features
 - [ ] Device data upload endpoint (API + form/CSV).

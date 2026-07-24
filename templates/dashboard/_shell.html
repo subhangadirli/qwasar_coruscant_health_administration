@@ -1,0 +1,10 @@
+{% comment %}
+Reusable dashboard shell. Include with:
+  {% include "dashboard/_shell.html" with title=... subtitle=... %}
+and wrap cards inside a {% block %} in the extending template instead — here we
+keep it simple and let each role template render its own header + body.
+{% endcomment %}
+<header class="mb-6">
+  <h1 class="text-2xl font-bold text-slate-900">{{ heading }}</h1>
+  <p class="mt-1 text-slate-500">{{ subheading }}</p>
+</header>

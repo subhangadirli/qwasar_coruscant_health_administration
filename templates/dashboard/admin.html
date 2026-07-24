@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Administrator dashboard · CHA{% endblock %}
+{% block content %}
+{% include "dashboard/_shell.html" with heading="Administrator dashboard" subheading="Manage registrations and monitor the system." %}
+<div class="grid gap-4 sm:grid-cols-2">
+  <a href="{% url 'accounts:approvals' %}" class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Pending approvals →</h2>
+    <p class="mt-1 text-sm text-slate-500">Acknowledge patient and doctor registrations.</p>
+  </a>
+  <a href="/admin/" class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Django admin →</h2>
+    <p class="mt-1 text-sm text-slate-500">Manage users, tables, and data.</p>
+  </a>
+</div>
+{% endblock %}

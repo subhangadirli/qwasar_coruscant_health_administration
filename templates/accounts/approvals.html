@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Pending approvals · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">Pending approvals</h1>
+  <p class="mt-1 text-sm text-slate-500">Acknowledge new patient and doctor registrations.</p>
+
+  {% if pending_users %}
+    <table class="mt-6 w-full text-left text-sm">
+      <thead class="text-slate-500">
+        <tr class="border-b">
+          <th class="py-2">Username</th>
+          <th class="py-2">Email</th>
+          <th class="py-2">Role</th>
+          <th class="py-2">Registered</th>
+          <th class="py-2 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in pending_users %}
+          <tr class="border-b last:border-0">
+            <td class="py-3 font-medium text-slate-800">{{ u.username }}</td>
+            <td class="py-3 text-slate-600">{{ u.email }}</td>
+            <td class="py-3">{{ u.get_role_display }}</td>
+            <td class="py-3 text-slate-500">{{ u.date_joined|date:"M d, Y" }}</td>
+            <td class="py-3">
+              <div class="flex justify-end gap-2">
+                <form method="post" action="{% url 'accounts:approve' u.pk %}">
+                  {% csrf_token %}
+                  <button class="rounded bg-emerald-600 px-3 py-1 text-white hover:bg-emerald-500">Approve</button>
+                </form>
+                <form method="post" action="{% url 'accounts:reject' u.pk %}">
+                  {% csrf_token %}
+                  <button class="rounded bg-red-100 px-3 py-1 text-red-700 hover:bg-red-200">Reject</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-6 text-center text-slate-500">
+      No accounts awaiting approval. 🎉
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

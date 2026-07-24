@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Log in · CHA{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">Log in</h1>
+  <p class="mt-1 text-sm text-slate-500">Access your Coruscant Health dashboard.</p>
+
+  {% if form.errors %}
+    <p class="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+      Invalid username or password.
+    </p>
+  {% endif %}
+
+  <form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endfor %}
+    <button type="submit" class="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800">
+      Log in
+    </button>
+  </form>
+
+  <p class="mt-4 text-sm text-slate-500">
+    No account? <a href="{% url 'accounts:register' %}" class="text-emerald-600 hover:underline">Register</a>
+  </p>
+</div>
+
+<style>
+  input { width:100%; border:1px solid #cbd5e1; border-radius:0.5rem; padding:0.5rem 0.75rem; margin-top:0.25rem; }
+  input:focus { outline:2px solid #10b981; outline-offset:1px; }
+</style>
+{% endblock %}

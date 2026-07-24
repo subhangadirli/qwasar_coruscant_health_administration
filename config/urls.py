@@ -6,5 +6,6 @@ from apps.dashboard.views import health_check
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health_check, name="health"),
+    path("accounts/", include("apps.accounts.urls")),
     path("", include("apps.dashboard.urls")),
 ]

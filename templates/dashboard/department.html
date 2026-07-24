@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Department dashboard · CHA{% endblock %}
+{% block content %}
+{% include "dashboard/_shell.html" with heading="Department dashboard" subheading="Incoming service orders and results." %}
+<div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+  <h2 class="font-semibold text-slate-800">Order queue</h2>
+  <p class="mt-1 text-sm text-slate-500">Receive, execute, and upload results. <em>(M4)</em></p>
+</div>
+{% endblock %}
