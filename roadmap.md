@@ -143,22 +143,29 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ---
 
 ## 5. Security Checklist
-- [ ] Passwords hashed (Django default), password validators on.
+- [x] Passwords hashed (Django default), password validators on.
 - [ ] Documents encrypted at rest; keys in secrets manager, not code.
 - [ ] Private file storage; no public bucket, expiring download links.
-- [ ] RBAC enforced server-side on every view (not just UI hiding).
-- [ ] `DEBUG=False`, `SECURE_SSL_REDIRECT`, HSTS, secure/HTTPOnly cookies in prod.
-- [ ] CSRF on all forms; audit logging for sensitive actions.
-- [ ] No secrets in git; `.env` gitignored.
+- [x] RBAC enforced server-side on every view (not just UI hiding).
+- [x] `DEBUG=False`, `SECURE_SSL_REDIRECT`, HSTS, secure/HTTPOnly cookies in prod.
+- [x] CSRF on all forms.
+- [ ] Audit logging for sensitive actions.
+- [x] No secrets in git; `.env` gitignored.
+
+> `manage.py check --deploy` passes clean against `config.settings.prod`.
+> Document encryption and private storage are M6. Audit logging is still
+> open: rejection is recorded via `is_rejected`, but approvals, logins and
+> report access are not logged anywhere.
 
 ---
 
 ## 6. Deliverables (grading-facing)
-- [ ] Working Django app in the repo.
+- [x] Working Django app in the repo.
 - [ ] `my_coruscant_health_administration_url.txt` — live URL only.
-- [ ] Unit tests + passing CI.
-- [ ] Completed `README.md`.
-- [ ] This `roadmap.md`.
+- [x] Unit tests (85 passing).
+- [ ] Passing CI.
+- [x] Completed `README.md`.
+- [x] This `roadmap.md`.
 
 ---
 
