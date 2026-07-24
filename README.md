@@ -31,11 +31,31 @@ python manage.py runserver
 Then open http://127.0.0.1:8000/ — health probe at `/health/`, admin at
 `/admin/`. Run the tests with `python manage.py test`.
 
+### Patient readings
+Approved patients can record health data three ways, all reachable from
+`/records/readings/`:
+
+- **By hand** — a single measurement at `/records/readings/add/`.
+- **CSV** — a device export at `/records/readings/upload/`, with columns
+  `metric,value,recorded_at` and an optional `unit`.
+- **Device API** — generate a bearer token at `/records/device-token/`, then:
+
+```
+curl -X POST http://127.0.0.1:8000/records/api/readings/ \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"readings":[{"metric":"heart_rate","value":72,"recorded_at":"2026-07-20T08:30:00Z"}]}'
+```
+
+CSV and API uploads are all-or-nothing: if any row is invalid, nothing is
+saved. Tokens are stored only as a hash and shown once, so a replacement
+token is the way to recover from a lost one.
+
 ## Project layout
 ```
 config/            project + split settings (base/dev/prod)
 apps/accounts      custom User model, roles, approval gate
-apps/records       health readings, reports, prescriptions
+apps/records       health readings, device tokens, reports, prescriptions
 apps/orders        service orders + department results
 apps/documents     encrypted document upload/storage
 apps/dashboard     landing + role dashboards

@@ -87,11 +87,16 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] RBAC middleware/mixins; login/logout; role-based redirect to dashboards.
 - [x] Tests: registration, approval gate, access control.
 
-### M2 — Patient features
-- [ ] Device data upload endpoint (API + form/CSV).
-- [ ] Patient dashboard: view readings (table + Chart.js trend).
-- [ ] View prescriptions/reports from doctor.
-- [ ] Tests.
+### M2 — Patient features ✅
+- [x] Device data upload endpoint (API + form/CSV).
+- [x] Patient dashboard: view readings (table + Chart.js trend).
+- [x] View prescriptions/reports from doctor.
+- [x] Tests.
+
+> Notes: the device API is a plain JSON view (no DRF) authenticated by a
+> per-patient bearer token, stored only as a SHA-256 digest. CSV and API
+> uploads share one validator (`records.ingest`) and are all-or-nothing.
+> `Report` drafts are invisible to patients; doctor-side authoring is M3.
 
 ### M3 — Doctor features
 - [ ] View assigned patient records + reading trends.
