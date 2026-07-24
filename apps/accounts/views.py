@@ -1,10 +1,10 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, View
 
 from .forms import RegistrationForm
+from .mixins import RoleRequiredMixin
 from .models import Role, User
 
 
@@ -30,12 +30,10 @@ def pending(request):
     return render(request, "accounts/pending.html")
 
 
-class AdminRequiredMixin(UserPassesTestMixin):
+class AdminRequiredMixin(RoleRequiredMixin):
     """Only administrators (role=admin) or Django staff may manage approvals."""
 
-    def test_func(self):
-        u = self.request.user
-        return u.is_authenticated and (u.role == Role.ADMIN or u.is_staff)
+    allowed_roles = (Role.ADMIN,)
 
 
 class PendingApprovalsView(AdminRequiredMixin, ListView):
