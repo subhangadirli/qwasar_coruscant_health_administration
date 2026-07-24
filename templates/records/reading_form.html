@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Add reading · CHA{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-lg rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">Add a reading</h1>
+  <p class="mt-1 text-sm text-slate-500">Record a single measurement by hand.</p>
+
+  <form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">
+          {{ field.label }}
+        </label>
+        <div class="mt-1">{{ field }}</div>
+        {% if field.help_text %}
+          <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+          <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <div class="flex items-center gap-3 pt-2">
+      <button type="submit"
+              class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+        Save reading
+      </button>
+      <a href="{% url 'records:readings' %}" class="text-sm text-slate-500 hover:text-slate-700">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

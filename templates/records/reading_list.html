@@ -7,6 +7,12 @@
     <div>
       <h1 class="text-2xl font-bold text-slate-900">My readings</h1>
       <p class="mt-1 text-sm text-slate-500">Health data uploaded from your device.</p>
+      <div class="mt-3 flex items-center gap-2">
+        <a href="{% url 'records:add_reading' %}"
+           class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500">Add reading</a>
+        <a href="{% url 'records:upload_readings' %}"
+           class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50">Upload CSV</a>
+      </div>
     </div>
     <form method="get" class="flex items-center gap-2">
       <label for="metric" class="text-sm text-slate-500">Metric</label>
