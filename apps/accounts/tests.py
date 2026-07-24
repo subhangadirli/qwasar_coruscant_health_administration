@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Role
+from .models import PatientDoctorAssignment, Role
 
 User = get_user_model()
 
@@ -102,3 +104,71 @@ class ApprovalWorkflowTests(TestCase):
         self.client.post(reverse("accounts:reject", args=[self.pending_user.pk]))
         response = self.client.get(reverse("accounts:approvals"))
         self.assertNotIn(self.pending_user, response.context["pending_users"])
+
+
+class PatientDoctorAssignmentTests(TestCase):
+    def setUp(self):
+        self.doctor = User.objects.create_user(
+            username="doc", password="pw", role=Role.DOCTOR, is_approved=True
+        )
+        self.patient = User.objects.create_user(
+            username="pat", password="pw", role=Role.PATIENT, is_approved=True
+        )
+
+    def assign(self, **overrides):
+        fields = {"doctor": self.doctor, "patient": self.patient, **overrides}
+        return PatientDoctorAssignment.objects.create(**fields)
+
+    def test_patients_of_lists_the_assigned_patient(self):
+        self.assign()
+        self.assertEqual(
+            list(PatientDoctorAssignment.patients_of(self.doctor)), [self.patient]
+        )
+
+    def test_patients_of_excludes_other_doctors_patients(self):
+        other_doctor = User.objects.create_user(
+            username="doc2", password="pw", role=Role.DOCTOR, is_approved=True
+        )
+        self.assign()
+        self.assertEqual(list(PatientDoctorAssignment.patients_of(other_doctor)), [])
+
+    def test_patients_of_excludes_inactive_assignments(self):
+        self.assign(is_active=False)
+        self.assertEqual(list(PatientDoctorAssignment.patients_of(self.doctor)), [])
+
+    def test_patients_of_excludes_unapproved_and_rejected_patients(self):
+        self.assign()
+        self.patient.is_approved = False
+        self.patient.save(update_fields=["is_approved"])
+        self.assertEqual(list(PatientDoctorAssignment.patients_of(self.doctor)), [])
+
+        self.patient.is_approved = True
+        self.patient.is_rejected = True
+        self.patient.save(update_fields=["is_approved", "is_rejected"])
+        self.assertEqual(list(PatientDoctorAssignment.patients_of(self.doctor)), [])
+
+    def test_is_assigned_tracks_the_active_flag(self):
+        assignment = self.assign()
+        self.assertTrue(
+            PatientDoctorAssignment.is_assigned(self.doctor, self.patient)
+        )
+        assignment.is_active = False
+        assignment.save(update_fields=["is_active"])
+        self.assertFalse(
+            PatientDoctorAssignment.is_assigned(self.doctor, self.patient)
+        )
+
+    def test_pairing_cannot_be_duplicated(self):
+        self.assign()
+        with self.assertRaises(IntegrityError):
+            self.assign()
+
+    def test_clean_rejects_wrong_roles(self):
+        swapped = PatientDoctorAssignment(
+            patient=self.doctor, doctor=self.patient
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            swapped.full_clean()
+        self.assertEqual(
+            set(ctx.exception.message_dict), {"patient", "doctor"}
+        )
