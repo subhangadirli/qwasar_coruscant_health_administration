@@ -30,18 +30,7 @@
     </form>
   </div>
 
-  {% if chart_data %}
-    <section class="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
-      <h2 class="text-sm font-semibold text-slate-700">
-        {{ chart_data.label }} trend
-        {% if chart_data.unit %}<span class="font-normal text-slate-500">({{ chart_data.unit }})</span>{% endif %}
-      </h2>
-      <div class="mt-3 h-64">
-        <canvas id="reading-chart"></canvas>
-      </div>
-    </section>
-    {{ chart_data|json_script:"reading-chart-data" }}
-  {% endif %}
+  {% include "records/_chart.html" %}
 
   {% if readings %}
     <div class="mt-6 overflow-x-auto">
@@ -89,38 +78,5 @@
 {% endblock %}
 
 {% block scripts %}
-{% if chart_data %}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>
-    (function () {
-      var payload = JSON.parse(document.getElementById("reading-chart-data").textContent);
-      new Chart(document.getElementById("reading-chart"), {
-        type: "line",
-        data: {
-          labels: payload.labels.map(function (t) {
-            return new Date(t).toLocaleString();
-          }),
-          datasets: [{
-            label: payload.unit ? payload.label + " (" + payload.unit + ")" : payload.label,
-            data: payload.values,
-            borderColor: "#059669",
-            backgroundColor: "rgba(5, 150, 105, 0.12)",
-            tension: 0.3,
-            fill: true,
-            pointRadius: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {mode: "index", intersect: false},
-          scales: {
-            y: {beginAtZero: false, title: {display: Boolean(payload.unit), text: payload.unit}},
-            x: {ticks: {maxTicksLimit: 8, autoSkip: true}}
-          }
-        }
-      });
-    })();
-  </script>
-{% endif %}
+{% include "records/_chart_scripts.html" %}
 {% endblock %}

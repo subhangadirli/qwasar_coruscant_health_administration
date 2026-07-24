@@ -14,6 +14,12 @@ urlpatterns = [
     ),
     path("device-token/", views.DeviceTokenView.as_view(), name="device_token"),
     path("api/readings/", views.device_readings_ingest, name="api_readings"),
+    path("patients/", views.DoctorPatientsView.as_view(), name="patients"),
+    path(
+        "patients/<int:pk>/",
+        views.DoctorPatientDetailView.as_view(),
+        name="patient_detail",
+    ),
     path("reports/", views.PatientReportsView.as_view(), name="reports"),
     path(
         "reports/<int:pk>/",

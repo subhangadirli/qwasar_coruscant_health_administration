@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.username }} · CHA{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <a href="{% url 'records:patients' %}" class="text-sm text-slate-500 hover:text-slate-700">&larr; My patients</a>
+
+    <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">{{ patient.username }}</h1>
+        <p class="mt-1 text-sm text-slate-500">
+          {{ patient.get_full_name|default:"No name on file" }}
+          {% if patient.email %}· {{ patient.email }}{% endif %}
+        </p>
+      </div>
+      <form method="get" class="flex items-center gap-2">
+        <label for="metric" class="text-sm text-slate-500">Metric</label>
+        <select id="metric" name="metric"
+                class="rounded-lg border-slate-300 bg-white px-3 py-1.5 text-sm shadow-sm">
+          <option value="">All metrics</option>
+          {% for value, label in metric_choices %}
+            <option value="{{ value }}" {% if value == selected_metric %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit"
+                class="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700">Filter</button>
+      </form>
+    </div>
+
+    {% include "records/_chart.html" %}
+  </div>
+
+  <section class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <h2 class="text-lg font-semibold text-slate-900">Trends</h2>
+    <p class="mt-1 text-sm text-slate-500">
+      Most recent readings compared against the block before them, scored by
+      movement toward or away from the healthy range.
+    </p>
+
+    {% if trends %}
+      <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for trend in trends %}
+          <div class="rounded-xl p-4 ring-1
+            {% if trend.status == 'improving' %}bg-emerald-50 ring-emerald-200
+            {% elif trend.status == 'worsening' %}bg-red-50 ring-red-200
+            {% else %}bg-slate-50 ring-slate-200{% endif %}">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-medium text-slate-800">{{ trend.label }}</h3>
+              <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold
+                {% if trend.status == 'improving' %}bg-emerald-600 text-white
+                {% elif trend.status == 'worsening' %}bg-red-600 text-white
+                {% else %}bg-slate-200 text-slate-700{% endif %}">
+                {{ trend.status_label }}
+              </span>
+            </div>
+            {% if trend.is_comparable %}
+              <p class="mt-3 text-2xl font-semibold tabular-nums text-slate-900">
+                {{ trend.recent_mean }} <span class="text-sm font-normal text-slate-500">{{ trend.unit }}</span>
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ trend.direction_label }} from {{ trend.baseline_mean }}
+                ({% if trend.change > 0 %}+{% endif %}{{ trend.change }})
+                over {{ trend.sample_size }} readings
+              </p>
+            {% else %}
+              <p class="mt-3 text-sm text-slate-500">
+                {{ trend.sample_size }} reading(s) so far; a comparison needs at least 4.
+              </p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="mt-5 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+        This patient has not uploaded any readings yet.
+      </p>
+    {% endif %}
+  </section>
+
+  <section class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <h2 class="text-lg font-semibold text-slate-900">Recent readings</h2>
+    {% if readings %}
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-slate-500">
+            <tr class="border-b">
+              <th class="py-2">Metric</th>
+              <th class="py-2">Value</th>
+              <th class="py-2">Recorded</th>
+              <th class="py-2">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for reading in readings %}
+              <tr class="border-b last:border-0">
+                <td class="py-3 font-medium text-slate-800">{{ reading.get_metric_display }}</td>
+                <td class="py-3 tabular-nums text-slate-700">{{ reading.value }} {{ reading.unit }}</td>
+                <td class="py-3 text-slate-500">{{ reading.recorded_at|date:"M d, Y H:i" }}</td>
+                <td class="py-3 text-slate-500">{{ reading.get_source_display }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mt-4 rounded-lg bg-slate-50 px-4 py-8 text-center text-slate-500">Nothing recorded yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <h2 class="text-lg font-semibold text-slate-900">Reports and prescriptions</h2>
+    {% if reports %}
+      <ul class="mt-4 divide-y divide-slate-200">
+        {% for report in reports %}
+          <li class="flex flex-wrap items-center gap-2 py-3">
+            <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+              {{ report.get_kind_display }}
+            </span>
+            <span class="font-medium text-slate-800">{{ report.title }}</span>
+            {% if not report.is_published %}
+              <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">Draft</span>
+            {% endif %}
+            <span class="text-sm text-slate-500">
+              Dr. {{ report.doctor.username }} · {{ report.updated_at|date:"M d, Y" }}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-4 rounded-lg bg-slate-50 px-4 py-8 text-center text-slate-500">Nothing written yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include "records/_chart_scripts.html" %}
+{% endblock %}

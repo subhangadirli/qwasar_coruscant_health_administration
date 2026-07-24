@@ -1,0 +1,16 @@
+{% comment %}
+Trend chart for a single metric. Expects `chart_data` in the context and
+pairs with records/_chart_scripts.html inside the page's {% block scripts %}.
+{% endcomment %}
+{% if chart_data %}
+  <section class="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+    <h2 class="text-sm font-semibold text-slate-700">
+      {{ chart_data.label }} trend
+      {% if chart_data.unit %}<span class="font-normal text-slate-500">({{ chart_data.unit }})</span>{% endif %}
+    </h2>
+    <div class="mt-3 h-64">
+      <canvas id="reading-chart"></canvas>
+    </div>
+  </section>
+  {{ chart_data|json_script:"reading-chart-data" }}
+{% endif %}

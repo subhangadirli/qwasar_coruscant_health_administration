@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}My patients · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">My patients</h1>
+  <p class="mt-1 text-sm text-slate-500">Patients assigned to you by an administrator.</p>
+
+  {% if patients %}
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="text-slate-500">
+          <tr class="border-b">
+            <th class="py-2">Patient</th>
+            <th class="py-2">Email</th>
+            <th class="py-2">Readings</th>
+            <th class="py-2">Last reading</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for patient in patients %}
+            <tr class="border-b last:border-0">
+              <td class="py-3 font-medium text-slate-800">{{ patient.username }}</td>
+              <td class="py-3 text-slate-500">{{ patient.email|default:"-" }}</td>
+              <td class="py-3 tabular-nums text-slate-700">{{ patient.reading_count }}</td>
+              <td class="py-3 text-slate-500">
+                {% if patient.last_reading_at %}{{ patient.last_reading_at|date:"M d, Y H:i" }}{% else %}No data yet{% endif %}
+              </td>
+              <td class="py-3 text-right">
+                <a href="{% url 'records:patient_detail' patient.pk %}"
+                   class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700">Open record</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm">
+        {% if page_obj.has_previous %}
+          <a class="text-slate-600 hover:text-slate-900" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="text-slate-600 hover:text-slate-900" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+      No patients assigned to you yet. An administrator sets up assignments.
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

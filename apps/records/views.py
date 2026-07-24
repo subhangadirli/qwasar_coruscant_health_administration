@@ -2,21 +2,65 @@ import json
 
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Count, Max, Q
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView
 
 from apps.accounts.mixins import RoleRequiredMixin
-from apps.accounts.models import Role
+from apps.accounts.models import PatientDoctorAssignment, Role
 
 from .forms import HealthReadingForm, ReadingCSVUploadForm
 from .ingest import parse_reading_row
-from .models import DeviceToken, HealthReading, MetricType, ReadingSource
+from .models import (
+    DeviceToken,
+    HealthReading,
+    MetricType,
+    ReadingSource,
+    ReportStatus,
+)
+from .trends import summarise_patient
 
 # Bounds one device request; matches the spirit of the CSV row cap.
 MAX_API_READINGS = 500
+
+# Enough history to show a trend without shipping a huge payload.
+CHART_POINT_LIMIT = 100
+
+
+def valid_metric(value):
+    """A metric key from user input, or None if it is not one we know."""
+    return value if value in MetricType.values else None
+
+
+def chart_payload(patient, metric, limit=CHART_POINT_LIMIT):
+    """Chart.js-ready series for one metric, or None when there is nothing.
+
+    A chart mixing metrics would put incompatible units on one axis, so a
+    series is always a single metric.
+    """
+    if not metric:
+        return None
+
+    readings = list(
+        patient.health_readings.filter(metric=metric).order_by("-recorded_at")[
+            :limit
+        ]
+    )
+    if not readings:
+        return None
+    readings.reverse()  # a trend line reads oldest to newest
+
+    return {
+        "metric": metric,
+        "label": MetricType(metric).label,
+        "unit": readings[0].unit,
+        "labels": [r.recorded_at.isoformat() for r in readings],
+        "values": [float(r.value) for r in readings],
+    }
 
 
 class PatientReadingsView(RoleRequiredMixin, ListView):
@@ -26,19 +70,12 @@ class PatientReadingsView(RoleRequiredMixin, ListView):
     template_name = "records/reading_list.html"
     context_object_name = "readings"
     paginate_by = 25
-    # Enough history to show a trend without shipping a huge payload.
-    chart_point_limit = 100
 
     def get_selected_metric(self):
-        metric = self.request.GET.get("metric")
-        return metric if metric in MetricType.values else None
+        return valid_metric(self.request.GET.get("metric"))
 
     def get_chart_metric(self):
-        """Metric to plot: the filtered one, else the most recently recorded.
-
-        A chart mixing metrics would put incompatible units on one axis, so
-        the trend is always for a single metric.
-        """
+        """Metric to plot: the filtered one, else the most recently recorded."""
         selected = self.get_selected_metric()
         if selected:
             return selected
@@ -46,26 +83,7 @@ class PatientReadingsView(RoleRequiredMixin, ListView):
         return latest.metric if latest else None
 
     def get_chart_data(self):
-        metric = self.get_chart_metric()
-        if not metric:
-            return None
-
-        readings = list(
-            self.request.user.health_readings.filter(metric=metric).order_by(
-                "-recorded_at"
-            )[: self.chart_point_limit]
-        )
-        if not readings:
-            return None
-        readings.reverse()  # a trend line reads oldest to newest
-
-        return {
-            "metric": metric,
-            "label": MetricType(metric).label,
-            "unit": readings[0].unit,
-            "labels": [r.recorded_at.isoformat() for r in readings],
-            "values": [float(r.value) for r in readings],
-        }
+        return chart_payload(self.request.user, self.get_chart_metric())
 
     def get_queryset(self):
         # Scoped to the requesting user, so one patient can never read
@@ -161,6 +179,89 @@ class DeviceTokenView(RoleRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         context["raw_key"] = raw_key
         return self.render_to_response(context)
+
+
+class DoctorRequiredMixin(RoleRequiredMixin):
+    allowed_roles = (Role.DOCTOR,)
+
+
+class AssignedPatientMixin(DoctorRequiredMixin):
+    """Resolve a patient only through this doctor's active assignments.
+
+    Because the lookup is scoped rather than checked afterwards, a doctor
+    who guesses the id of a patient they are not treating gets a 404 and
+    learns nothing about whether that patient exists.
+    """
+
+    def get_patient(self):
+        if not hasattr(self, "_patient"):
+            self._patient = get_object_or_404(
+                PatientDoctorAssignment.patients_of(self.request.user),
+                pk=self.kwargs["pk"],
+            )
+        return self._patient
+
+
+class DoctorPatientsView(DoctorRequiredMixin, ListView):
+    """The doctor's caseload: patients assigned to them."""
+
+    template_name = "records/patient_list.html"
+    context_object_name = "patients"
+    paginate_by = 25
+
+    def get_queryset(self):
+        return (
+            PatientDoctorAssignment.patients_of(self.request.user)
+            .annotate(
+                reading_count=Count("health_readings", distinct=True),
+                last_reading_at=Max("health_readings__recorded_at"),
+            )
+            .order_by("username")
+        )
+
+
+class DoctorPatientDetailView(AssignedPatientMixin, DetailView):
+    """One patient's record: trend verdicts, chart, readings, reports."""
+
+    template_name = "records/patient_detail.html"
+    context_object_name = "patient"
+    reading_limit = 20
+
+    def get_object(self, queryset=None):
+        return self.get_patient()
+
+    def get_chart_metric(self):
+        selected = valid_metric(self.request.GET.get("metric"))
+        if selected:
+            return selected
+        latest = self.get_patient().health_readings.first()
+        return latest.metric if latest else None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        patient = self.get_patient()
+        selected = valid_metric(self.request.GET.get("metric"))
+
+        readings = patient.health_readings.all()
+        if selected:
+            readings = readings.filter(metric=selected)
+
+        context.update(
+            {
+                "trends": summarise_patient(patient),
+                "chart_data": chart_payload(patient, self.get_chart_metric()),
+                "metric_choices": MetricType.choices,
+                "selected_metric": selected,
+                "readings": readings[: self.reading_limit],
+                # Published reports from any doctor, plus this doctor's own
+                # drafts: a colleague's unfinished draft is not part of the
+                # record yet.
+                "reports": patient.reports.filter(
+                    Q(status=ReportStatus.PUBLISHED) | Q(doctor=self.request.user)
+                ).select_related("doctor"),
+            }
+        )
+        return context
 
 
 def _bearer_token(request):

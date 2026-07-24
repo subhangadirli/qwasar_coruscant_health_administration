@@ -1,0 +1,34 @@
+{% if chart_data %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    (function () {
+      var payload = JSON.parse(document.getElementById("reading-chart-data").textContent);
+      new Chart(document.getElementById("reading-chart"), {
+        type: "line",
+        data: {
+          labels: payload.labels.map(function (t) {
+            return new Date(t).toLocaleString();
+          }),
+          datasets: [{
+            label: payload.unit ? payload.label + " (" + payload.unit + ")" : payload.label,
+            data: payload.values,
+            borderColor: "#059669",
+            backgroundColor: "rgba(5, 150, 105, 0.12)",
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {mode: "index", intersect: false},
+          scales: {
+            y: {beginAtZero: false, title: {display: Boolean(payload.unit), text: payload.unit}},
+            x: {ticks: {maxTicksLimit: 8, autoSkip: true}}
+          }
+        }
+      });
+    })();
+  </script>
+{% endif %}
