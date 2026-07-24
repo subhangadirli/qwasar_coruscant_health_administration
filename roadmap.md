@@ -98,18 +98,32 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > uploads share one validator (`records.ingest`) and are all-or-nothing.
 > `Report` drafts are invisible to patients; doctor-side authoring is M3.
 
-### M3 — Doctor features
-- [ ] View assigned patient records + reading trends.
-- [ ] Improvement/worsening indicator (compare recent vs. baseline).
-- [ ] Write report/prescription.
-- [ ] Place service orders.
-- [ ] Tests.
+### M3 — Doctor features ✅
+- [x] View assigned patient records + reading trends.
+- [x] Improvement/worsening indicator (compare recent vs. baseline).
+- [x] Write report/prescription.
+- [x] Place service orders.
+- [x] Tests.
+
+> Notes: doctor access runs through `PatientDoctorAssignment`, so an
+> unassigned patient is a 404 rather than a check that runs after the
+> record has been fetched. The indicator (`records.trends`) scores the
+> recent mean against the previous block by movement toward or away from
+> the metric's healthy range, which is what makes one rule work for
+> metrics where lower is better and metrics where it is not. Reports are
+> drafts until published, and publishing is final. Placing orders is here;
+> the department queue, execution and results are M4.
 
 ### M4 — Department & orders lifecycle
 - [ ] Department order queue (receive).
 - [ ] Execute + upload result (with document).
 - [ ] Status transitions surfaced to doctor & patient.
 - [ ] Tests.
+
+> The `ServiceOrder` model and its transitions (`start`, `complete`,
+> `cancel`) landed with M3 so both sides share one set of rules; what is
+> left here is the department-facing queue, `OrderResult`, and surfacing
+> status to the patient.
 
 ### M5 — Emergency intake
 - [ ] Minimal fast-intake form (create patient in seconds).
@@ -162,7 +176,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ## 6. Deliverables (grading-facing)
 - [x] Working Django app in the repo.
 - [ ] `my_coruscant_health_administration_url.txt` — live URL only.
-- [x] Unit tests (85 passing).
+- [x] Unit tests (198 passing).
 - [ ] Passing CI.
 - [x] Completed `README.md`.
 - [x] This `roadmap.md`.

@@ -21,6 +21,16 @@
           {% if user.role == 'admin' or user.is_staff %}
             <a href="{% url 'accounts:approvals' %}" class="opacity-80 hover:opacity-100">Approvals</a>
           {% endif %}
+          {% if user.is_approved %}
+            {% if user.role == 'doctor' %}
+              <a href="{% url 'records:patients' %}" class="opacity-80 hover:opacity-100">Patients</a>
+              <a href="{% url 'records:doctor_reports' %}" class="opacity-80 hover:opacity-100">Reports</a>
+              <a href="{% url 'orders:doctor_orders' %}" class="opacity-80 hover:opacity-100">Orders</a>
+            {% elif user.role == 'patient' %}
+              <a href="{% url 'records:readings' %}" class="opacity-80 hover:opacity-100">Readings</a>
+              <a href="{% url 'records:reports' %}" class="opacity-80 hover:opacity-100">Reports</a>
+            {% endif %}
+          {% endif %}
           <span class="opacity-80">{{ user.username }} · {{ user.get_role_display }}</span>
           <form method="post" action="{% url 'accounts:logout' %}" class="inline">
             {% csrf_token %}

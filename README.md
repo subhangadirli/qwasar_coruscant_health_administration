@@ -51,12 +51,34 @@ CSV and API uploads are all-or-nothing: if any row is invalid, nothing is
 saved. Tokens are stored only as a hash and shown once, so a replacement
 token is the way to recover from a lost one.
 
+### Doctor workflow
+A doctor works from their caseload at `/records/patients/`. Access runs
+through `PatientDoctorAssignment`, which an administrator sets up in the
+Django admin: without an active assignment a patient's record is a 404, not
+a permission error.
+
+Opening a record shows:
+
+- **Trends** per metric, labelled improving, worsening or stable. The rule
+  compares the mean of the most recent readings against the block before
+  them and asks whether it moved toward or away from the metric's healthy
+  range, so a falling heart rate reads as an improvement at 110 bpm and as
+  a deterioration at 55. Weight has no population-wide range, so its change
+  is reported without a verdict.
+- **A Chart.js trend line** for one metric at a time.
+- **Reports and prescriptions.** Writing produces a draft the patient
+  cannot see; publishing is a separate, final step, and a published report
+  is corrected by writing a follow-up rather than by editing it.
+- **Service orders.** A doctor orders a scan or lab test from a department
+  and may withdraw it until the department starts work. Orders from every
+  doctor are listed, so a scan a colleague already requested is visible.
+
 ## Project layout
 ```
 config/            project + split settings (base/dev/prod)
-apps/accounts      custom User model, roles, approval gate
+apps/accounts      custom User model, roles, approval gate, assignments
 apps/records       health readings, device tokens, reports, prescriptions
-apps/orders        service orders + department results
+apps/orders        departments and service orders
 apps/documents     encrypted document upload/storage
 apps/dashboard     landing + role dashboards
 templates/         base + page templates

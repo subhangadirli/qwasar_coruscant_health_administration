@@ -3,17 +3,20 @@
 {% block content %}
 {% include "dashboard/_shell.html" with heading="Doctor dashboard" subheading="Patient records, reports, and service orders." %}
 <div class="grid gap-4 sm:grid-cols-3">
-  <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-    <h2 class="font-semibold text-slate-800">Patients</h2>
-    <p class="mt-1 text-sm text-slate-500">Records and reading trends. <em>(M3)</em></p>
-  </div>
-  <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-    <h2 class="font-semibold text-slate-800">Reports</h2>
-    <p class="mt-1 text-sm text-slate-500">Write prescriptions. <em>(M3)</em></p>
-  </div>
-  <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-    <h2 class="font-semibold text-slate-800">Service orders</h2>
-    <p class="mt-1 text-sm text-slate-500">Order CT/PET scans, labs. <em>(M4)</em></p>
-  </div>
+  <a href="{% url 'records:patients' %}"
+     class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Patients &rarr;</h2>
+    <p class="mt-1 text-sm text-slate-500">Records and reading trends.</p>
+  </a>
+  <a href="{% url 'records:doctor_reports' %}"
+     class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Reports &rarr;</h2>
+    <p class="mt-1 text-sm text-slate-500">Reports and prescriptions you have written.</p>
+  </a>
+  <a href="{% url 'orders:doctor_orders' %}"
+     class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Service orders &rarr;</h2>
+    <p class="mt-1 text-sm text-slate-500">Scans and lab work you have requested.</p>
+  </a>
 </div>
 {% endblock %}
