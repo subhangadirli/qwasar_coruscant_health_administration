@@ -11,9 +11,11 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 SECRET_KEY = env("SECRET_KEY", "django-insecure-dev-key-not-for-production")
 
 # Deterministic dev key for document encryption (override in .env if desired).
+# Must decode to exactly 32 bytes for Fernet; generate a new one with:
+#   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 DOCUMENT_ENCRYPTION_KEY = env(
     "DOCUMENT_ENCRYPTION_KEY",
-    "dGVzdC1kZXYta2V5LTMyLWJ5dGVzLWZvci1kZXYtb25seQ==",
+    "yqT6ddaLeFPFH_fSVQ1vlnpXK3FHNj1_8PT31Zui_1A=",
 )
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
