@@ -1,18 +1,14 @@
 import csv
 import io
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django import forms
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 
-from .models import DEFAULT_UNITS, HealthReading, MetricType, ReadingSource
+from .ingest import parse_reading_row
+from .models import HealthReading, ReadingSource
 
 CSV_REQUIRED_COLUMNS = {"metric", "value", "recorded_at"}
 MAX_CSV_BYTES = 1024 * 1024
 MAX_CSV_ROWS = 1000
-# DecimalField(max_digits=8, decimal_places=2) tops out just under 1,000,000.
-MAX_READING_VALUE = Decimal("1000000")
 
 
 class HealthReadingForm(forms.ModelForm):
@@ -97,38 +93,7 @@ class ReadingCSVUploadForm(forms.Form):
             if isinstance(value, list):
                 value = ""
             cleaned[key.strip().lower()] = (value or "").strip()
-
-        metric = cleaned.get("metric", "")
-        if metric not in MetricType.values:
-            raise ValueError(f"unknown metric {metric!r}.")
-
-        raw_value = cleaned.get("value", "")
-        try:
-            value = Decimal(raw_value)
-        except (InvalidOperation, ValueError):
-            raise ValueError(f"value {raw_value!r} is not a number.")
-        if not value.is_finite():
-            raise ValueError("value must be a finite number.")
-        if value < 0:
-            raise ValueError("value cannot be negative.")
-        if value >= MAX_READING_VALUE:
-            raise ValueError("value is out of range.")
-        value = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-        recorded_at = parse_datetime(cleaned.get("recorded_at", ""))
-        if recorded_at is None:
-            raise ValueError("recorded_at must be an ISO 8601 datetime.")
-        if timezone.is_naive(recorded_at):
-            recorded_at = timezone.make_aware(recorded_at)
-        if recorded_at > timezone.now():
-            raise ValueError("recorded_at is in the future.")
-
-        return {
-            "metric": metric,
-            "value": value,
-            "unit": cleaned.get("unit") or DEFAULT_UNITS.get(metric, ""),
-            "recorded_at": recorded_at,
-        }
+        return parse_reading_row(cleaned)
 
     def save(self, patient):
         return HealthReading.objects.bulk_create(

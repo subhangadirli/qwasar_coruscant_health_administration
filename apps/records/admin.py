@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import HealthReading, Report
+from .models import DeviceToken, HealthReading, Report
 
 
 @admin.register(HealthReading)
@@ -29,3 +29,19 @@ class ReportAdmin(admin.ModelAdmin):
                 report.publish()
                 published += 1
         self.message_user(request, f"{published} report(s) published.")
+
+
+@admin.register(DeviceToken)
+class DeviceTokenAdmin(admin.ModelAdmin):
+    """Audit and revoke device credentials.
+
+    The token itself is unrecoverable by design, so there is nothing to edit
+    here; deleting a row revokes the device's access.
+    """
+
+    list_display = ("patient", "created_at", "last_used_at")
+    search_fields = ("patient__username", "patient__email")
+    readonly_fields = ("patient", "key_hash", "created_at", "last_used_at")
+
+    def has_add_permission(self, request):
+        return False

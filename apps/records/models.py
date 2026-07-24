@@ -1,3 +1,5 @@
+import hashlib
+import secrets
 from decimal import Decimal
 
 from django.conf import settings
@@ -158,3 +160,55 @@ class Report(models.Model):
 
     def __str__(self):
         return f"{self.get_kind_display()}: {self.title}"
+
+
+class DeviceToken(models.Model):
+    """Bearer credential letting a patient's device post readings.
+
+    Only the SHA-256 of the token is stored, so a leaked database does not
+    hand over working credentials. The raw value is shown once, at issue
+    time, and cannot be recovered afterwards -- only replaced.
+
+    A plain digest (rather than a slow password hash) is deliberate: the
+    token is 32 random bytes, so it has nothing to brute-force, and every
+    API request has to verify it.
+    """
+
+    patient = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="device_token",
+        limit_choices_to={"role": Role.PATIENT},
+    )
+    key_hash = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    @staticmethod
+    def hash_key(raw_key):
+        return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+
+    @classmethod
+    def issue(cls, patient):
+        """Create or replace this patient's token, returning the raw value."""
+        raw_key = secrets.token_urlsafe(32)
+        token, _ = cls.objects.update_or_create(
+            patient=patient,
+            defaults={"key_hash": cls.hash_key(raw_key), "last_used_at": None},
+        )
+        return token, raw_key
+
+    @classmethod
+    def authenticate(cls, raw_key):
+        if not raw_key:
+            return None
+        return cls.objects.select_related("patient").filter(
+            key_hash=cls.hash_key(raw_key)
+        ).first()
+
+    def mark_used(self):
+        self.last_used_at = timezone.now()
+        self.save(update_fields=["last_used_at"])
+
+    def __str__(self):
+        return f"Device token for {self.patient.username}"

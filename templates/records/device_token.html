@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Device token · CHA{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <h1 class="text-2xl font-bold text-slate-900">Device token</h1>
+  <p class="mt-1 text-sm text-slate-500">
+    Lets your health device upload readings automatically.
+  </p>
+
+  {% if raw_key %}
+    <div class="mt-6 rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
+      <p class="text-sm font-medium text-emerald-900">
+        Copy this token now. It cannot be shown again.
+      </p>
+      <code class="mt-2 block break-all rounded-lg bg-white px-3 py-2 font-mono text-sm text-slate-800 ring-1 ring-emerald-200">{{ raw_key }}</code>
+    </div>
+  {% endif %}
+
+  <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-slate-200">
+    {% if token %}
+      <p>Issued {{ token.created_at|date:"M d, Y H:i" }}.</p>
+      <p class="mt-1">
+        Last used:
+        {% if token.last_used_at %}{{ token.last_used_at|date:"M d, Y H:i" }}{% else %}never{% endif %}.
+      </p>
+    {% else %}
+      <p>No token yet. Generate one to connect a device.</p>
+    {% endif %}
+  </div>
+
+  <form method="post" class="mt-6">
+    {% csrf_token %}
+    <button type="submit"
+            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+      {% if token %}Replace token{% else %}Generate token{% endif %}
+    </button>
+    {% if token %}
+      <p class="mt-2 text-xs text-slate-500">
+        Replacing the token immediately stops the old one from working.
+      </p>
+    {% endif %}
+  </form>
+
+  <h2 class="mt-8 text-sm font-semibold text-slate-700">Posting readings</h2>
+  <pre class="mt-2 overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs text-slate-100">POST {{ request.scheme }}://{{ request.get_host }}{% url 'records:api_readings' %}
+Authorization: Bearer &lt;your token&gt;
+Content-Type: application/json
+
+{
+  "readings": [
+    {"metric": "heart_rate", "value": 72, "unit": "bpm",
+     "recorded_at": "2026-07-20T08:30:00Z"}
+  ]
+}</pre>
+  <p class="mt-2 text-xs text-slate-500">
+    The whole batch is rejected if any reading is invalid.
+  </p>
+</div>
+{% endblock %}

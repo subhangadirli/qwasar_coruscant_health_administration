@@ -12,6 +12,8 @@ urlpatterns = [
         views.UploadReadingsCSVView.as_view(),
         name="upload_readings",
     ),
+    path("device-token/", views.DeviceTokenView.as_view(), name="device_token"),
+    path("api/readings/", views.device_readings_ingest, name="api_readings"),
     path("reports/", views.PatientReportsView.as_view(), name="reports"),
     path(
         "reports/<int:pk>/",
