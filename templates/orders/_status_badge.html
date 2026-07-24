@@ -1,0 +1,11 @@
+{% comment %}Status pill for a ServiceOrder. Expects `order`.{% endcomment %}
+<span class="rounded-full px-2.5 py-0.5 text-xs font-medium
+  {% if order.status == 'ordered' %}bg-sky-100 text-sky-700
+  {% elif order.status == 'in_progress' %}bg-amber-100 text-amber-700
+  {% elif order.status == 'completed' %}bg-emerald-100 text-emerald-700
+  {% else %}bg-slate-200 text-slate-600{% endif %}">
+  {{ order.get_status_display }}
+</span>
+{% if order.priority == 'urgent' %}
+  <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">Urgent</span>
+{% endif %}

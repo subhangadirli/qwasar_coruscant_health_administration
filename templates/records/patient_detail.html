@@ -141,6 +141,34 @@
       <p class="mt-4 rounded-lg bg-slate-50 px-4 py-8 text-center text-slate-500">Nothing written yet.</p>
     {% endif %}
   </section>
+
+  <section class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="text-lg font-semibold text-slate-900">Service orders</h2>
+      <a href="{% url 'orders:place_order' patient.pk %}"
+         class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500">Order a service</a>
+    </div>
+    {% if orders %}
+      <ul class="mt-4 divide-y divide-slate-200">
+        {% for order in orders %}
+          <li class="flex flex-wrap items-center gap-2 py-3">
+            {% include "orders/_status_badge.html" %}
+            {% if order.doctor == user %}
+              <a href="{% url 'orders:order_detail' order.pk %}"
+                 class="font-medium text-slate-800 hover:text-emerald-700">{{ order.procedure }}</a>
+            {% else %}
+              <span class="font-medium text-slate-800">{{ order.procedure }}</span>
+            {% endif %}
+            <span class="text-sm text-slate-500">
+              {{ order.department.name }} · Dr. {{ order.doctor.username }} · {{ order.created_at|date:"M d, Y" }}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-4 rounded-lg bg-slate-50 px-4 py-8 text-center text-slate-500">Nothing ordered yet.</p>
+    {% endif %}
+  </section>
 </div>
 {% endblock %}
 

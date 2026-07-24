@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
+
+from .models import PatientDoctorAssignment, Role
 
 
 class ApprovedRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -44,3 +46,26 @@ class RoleRequiredMixin(ApprovedRequiredMixin):
         if not super().test_func():
             return redirect("accounts:pending")
         raise PermissionDenied
+
+
+class DoctorRequiredMixin(RoleRequiredMixin):
+    allowed_roles = (Role.DOCTOR,)
+
+
+class AssignedPatientMixin(DoctorRequiredMixin):
+    """Resolve a patient only through this doctor's active assignments.
+
+    Because the lookup is scoped rather than checked afterwards, a doctor
+    who guesses the id of a patient they are not treating gets a 404 and
+    learns nothing about whether that patient exists.
+    """
+
+    patient_url_kwarg = "pk"
+
+    def get_patient(self):
+        if not hasattr(self, "_patient"):
+            self._patient = get_object_or_404(
+                PatientDoctorAssignment.patients_of(self.request.user),
+                pk=self.kwargs[self.patient_url_kwarg],
+            )
+        return self._patient

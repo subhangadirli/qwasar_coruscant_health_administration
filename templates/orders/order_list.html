@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}My service orders · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">My service orders</h1>
+      <p class="mt-1 text-sm text-slate-500">Scans and lab work you have requested.</p>
+    </div>
+    <div class="flex items-center gap-2 text-sm">
+      <a href="?scope=open"
+         class="rounded-lg px-3 py-1.5 {% if scope == 'open' %}bg-slate-900 text-white{% else %}bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50{% endif %}">Open</a>
+      <a href="?scope=closed"
+         class="rounded-lg px-3 py-1.5 {% if scope == 'closed' %}bg-slate-900 text-white{% else %}bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50{% endif %}">Closed</a>
+    </div>
+  </div>
+
+  {% if orders %}
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="text-slate-500">
+          <tr class="border-b">
+            <th class="py-2">Procedure</th>
+            <th class="py-2">Patient</th>
+            <th class="py-2">Department</th>
+            <th class="py-2">Status</th>
+            <th class="py-2">Placed</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr class="border-b last:border-0">
+              <td class="py-3 font-medium text-slate-800">{{ order.procedure }}</td>
+              <td class="py-3 text-slate-700">{{ order.patient.username }}</td>
+              <td class="py-3 text-slate-500">{{ order.department.name }}</td>
+              <td class="py-3">{% include "orders/_status_badge.html" %}</td>
+              <td class="py-3 text-slate-500">{{ order.created_at|date:"M d, Y" }}</td>
+              <td class="py-3 text-right">
+                <a href="{% url 'orders:order_detail' order.pk %}"
+                   class="text-slate-600 hover:text-slate-900">Open</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm">
+        {% if page_obj.has_previous %}
+          <a class="text-slate-600 hover:text-slate-900"
+             href="?scope={{ scope }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a class="text-slate-600 hover:text-slate-900"
+             href="?scope={{ scope }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+      {% if scope == 'open' %}
+        Nothing outstanding. Open a patient record to order a scan or lab test.
+      {% else %}
+        No completed or cancelled orders yet.
+      {% endif %}
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

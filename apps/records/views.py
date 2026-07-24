@@ -18,7 +18,11 @@ from django.views.generic import (
     UpdateView,
 )
 
-from apps.accounts.mixins import RoleRequiredMixin
+from apps.accounts.mixins import (
+    AssignedPatientMixin,
+    DoctorRequiredMixin,
+    RoleRequiredMixin,
+)
 from apps.accounts.models import PatientDoctorAssignment, Role
 
 from .forms import HealthReadingForm, ReadingCSVUploadForm, ReportForm
@@ -189,27 +193,6 @@ class DeviceTokenView(RoleRequiredMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class DoctorRequiredMixin(RoleRequiredMixin):
-    allowed_roles = (Role.DOCTOR,)
-
-
-class AssignedPatientMixin(DoctorRequiredMixin):
-    """Resolve a patient only through this doctor's active assignments.
-
-    Because the lookup is scoped rather than checked afterwards, a doctor
-    who guesses the id of a patient they are not treating gets a 404 and
-    learns nothing about whether that patient exists.
-    """
-
-    def get_patient(self):
-        if not hasattr(self, "_patient"):
-            self._patient = get_object_or_404(
-                PatientDoctorAssignment.patients_of(self.request.user),
-                pk=self.kwargs["pk"],
-            )
-        return self._patient
-
-
 class DoctorPatientsView(DoctorRequiredMixin, ListView):
     """The doctor's caseload: patients assigned to them."""
 
@@ -267,6 +250,11 @@ class DoctorPatientDetailView(AssignedPatientMixin, DetailView):
                 "reports": patient.reports.filter(
                     Q(status=ReportStatus.PUBLISHED) | Q(doctor=self.request.user)
                 ).select_related("doctor"),
+                # Orders from any doctor: a scan already requested by a
+                # colleague is exactly what stops a duplicate being ordered.
+                "orders": patient.service_orders.select_related(
+                    "department", "doctor"
+                ),
             }
         )
         return context
