@@ -16,10 +16,46 @@ class PatientReadingsView(RoleRequiredMixin, ListView):
     template_name = "records/reading_list.html"
     context_object_name = "readings"
     paginate_by = 25
+    # Enough history to show a trend without shipping a huge payload.
+    chart_point_limit = 100
 
     def get_selected_metric(self):
         metric = self.request.GET.get("metric")
         return metric if metric in MetricType.values else None
+
+    def get_chart_metric(self):
+        """Metric to plot: the filtered one, else the most recently recorded.
+
+        A chart mixing metrics would put incompatible units on one axis, so
+        the trend is always for a single metric.
+        """
+        selected = self.get_selected_metric()
+        if selected:
+            return selected
+        latest = self.request.user.health_readings.first()
+        return latest.metric if latest else None
+
+    def get_chart_data(self):
+        metric = self.get_chart_metric()
+        if not metric:
+            return None
+
+        readings = list(
+            self.request.user.health_readings.filter(metric=metric).order_by(
+                "-recorded_at"
+            )[: self.chart_point_limit]
+        )
+        if not readings:
+            return None
+        readings.reverse()  # a trend line reads oldest to newest
+
+        return {
+            "metric": metric,
+            "label": MetricType(metric).label,
+            "unit": readings[0].unit,
+            "labels": [r.recorded_at.isoformat() for r in readings],
+            "values": [float(r.value) for r in readings],
+        }
 
     def get_queryset(self):
         # Scoped to the requesting user, so one patient can never read
@@ -34,6 +70,7 @@ class PatientReadingsView(RoleRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["metric_choices"] = MetricType.choices
         context["selected_metric"] = self.get_selected_metric()
+        context["chart_data"] = self.get_chart_data()
         return context
 
 

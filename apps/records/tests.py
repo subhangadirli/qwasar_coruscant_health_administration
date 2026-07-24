@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 from decimal import Decimal
 
@@ -152,6 +153,77 @@ class PatientReadingsViewTests(TestCase):
     def test_empty_state_is_shown_without_readings(self):
         self.client.force_login(self.patient)
         self.assertContains(self.client.get(self.url), "No readings yet")
+
+
+class ReadingChartDataTests(TestCase):
+    def setUp(self):
+        self.patient = User.objects.create_user(
+            username="pat", password="pw", role=Role.PATIENT, is_approved=True
+        )
+        self.url = reverse("records:readings")
+        self.client.force_login(self.patient)
+
+    def chart(self, **params):
+        return self.client.get(self.url, params).context["chart_data"]
+
+    def test_no_chart_without_readings(self):
+        self.assertIsNone(self.chart())
+
+    def test_points_run_oldest_to_newest(self):
+        now = timezone.now()
+        make_reading(self.patient, value=Decimal("60"), recorded_at=now - timedelta(days=3))
+        make_reading(self.patient, value=Decimal("70"), recorded_at=now - timedelta(days=2))
+        make_reading(self.patient, value=Decimal("80"), recorded_at=now - timedelta(days=1))
+
+        self.assertEqual(self.chart()["values"], [60.0, 70.0, 80.0])
+
+    def test_chart_follows_the_selected_metric(self):
+        make_reading(self.patient, metric=MetricType.HEART_RATE, value=Decimal("70"))
+        make_reading(self.patient, metric=MetricType.WEIGHT, value=Decimal("81.5"))
+
+        chart = self.chart(metric=MetricType.WEIGHT)
+
+        self.assertEqual(chart["metric"], MetricType.WEIGHT)
+        self.assertEqual(chart["values"], [81.5])
+        self.assertEqual(chart["unit"], DEFAULT_UNITS[MetricType.WEIGHT])
+
+    def test_defaults_to_the_most_recently_recorded_metric(self):
+        now = timezone.now()
+        make_reading(
+            self.patient, metric=MetricType.HEART_RATE, recorded_at=now - timedelta(days=5)
+        )
+        make_reading(
+            self.patient, metric=MetricType.WEIGHT, recorded_at=now - timedelta(hours=1)
+        )
+
+        self.assertEqual(self.chart()["metric"], MetricType.WEIGHT)
+
+    def test_no_chart_when_selected_metric_has_no_readings(self):
+        make_reading(self.patient, metric=MetricType.HEART_RATE)
+        self.assertIsNone(self.chart(metric=MetricType.SPO2))
+
+    def test_chart_excludes_other_patients_readings(self):
+        other = User.objects.create_user(
+            username="other", password="pw", role=Role.PATIENT, is_approved=True
+        )
+        make_reading(other, value=Decimal("123"))
+        make_reading(self.patient, value=Decimal("70"))
+
+        self.assertEqual(self.chart()["values"], [70.0])
+
+    def test_point_count_is_capped(self):
+        now = timezone.now()
+        for minutes in range(105):
+            make_reading(self.patient, recorded_at=now - timedelta(minutes=minutes + 1))
+
+        chart = self.chart()
+
+        self.assertEqual(len(chart["values"]), 100)
+        self.assertEqual(len(chart["labels"]), 100)
+
+    def test_chart_payload_is_json_serializable(self):
+        make_reading(self.patient)
+        json.dumps(self.chart())
 
 
 class AddReadingViewTests(TestCase):
