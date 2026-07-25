@@ -146,7 +146,19 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] Upload for patients & doctors.
 - [x] Encrypt at rest (Fernet / KMS-backed); private storage + signed URLs.
 - [x] Access control on download; checksum integrity.
-- [ ] Tests: encryption round-trip, unauthorized-access denial.
+- [x] Tests: encryption round-trip, unauthorized-access denial.
+
+> Documents belong to a `patient` and record their `owner` (the patient
+> themselves, or a doctor uploading to an assigned patient). Files are written
+> through `documents.storage.EncryptedFileSystemStorage`, which Fernet-encrypts
+> the bytes at rest under `DOCUMENT_ENCRYPTION_KEY` — a leaked `MEDIA_ROOT`
+> yields ciphertext. There is no public media URL; the only way out is the
+> access-checked `download_document` view, which decrypts, re-hashes, and
+> refuses to serve anything whose SHA-256 no longer matches the checksum taken
+> at upload. Swapping to a KMS/S3 backend later means replacing the storage
+> class, not the models, views, or access checks. The `cryptography` /
+> `psycopg2-binary` deps and the `DOCUMENT_ENCRYPTION_KEY` settings (dev
+> default, prod fail-fast) were already in place from the scaffold.
 
 ### M7 — UI/UX polish
 - [ ] Consistent responsive design, role-aware nav.
@@ -170,8 +182,8 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 
 ## 5. Security Checklist
 - [x] Passwords hashed (Django default), password validators on.
-- [ ] Documents encrypted at rest; keys in secrets manager, not code.
-- [ ] Private file storage; no public bucket, expiring download links.
+- [x] Documents encrypted at rest; keys in secrets manager, not code.
+- [x] Private file storage; no public bucket, expiring download links.
 - [x] RBAC enforced server-side on every view (not just UI hiding).
 - [x] `DEBUG=False`, `SECURE_SSL_REDIRECT`, HSTS, secure/HTTPOnly cookies in prod.
 - [x] CSRF on all forms.
@@ -179,16 +191,20 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] No secrets in git; `.env` gitignored.
 
 > `manage.py check --deploy` passes clean against `config.settings.prod`.
-> Document encryption and private storage are M6. Audit logging is still
-> open: rejection is recorded via `is_rejected`, but approvals, logins and
-> report access are not logged anywhere.
+> Documents are Fernet-encrypted at rest (M6) with the key read from the
+> environment — a dev default in `dev.py`, fail-fast in `prod.py` — and served
+> only through an access-checked download view, so there is no public bucket.
+> Expiring signed URLs are the S3 variant of that same check and arrive with
+> object storage in M8. Audit logging is still open: rejection is recorded via
+> `is_rejected`, but approvals, logins and report access are not logged
+> anywhere.
 
 ---
 
 ## 6. Deliverables (grading-facing)
 - [x] Working Django app in the repo.
 - [ ] `my_coruscant_health_administration_url.txt` — live URL only.
-- [x] Unit tests (239 passing).
+- [x] Unit tests (251 passing).
 - [ ] Passing CI.
 - [x] Completed `README.md`.
 - [x] This `roadmap.md`.
