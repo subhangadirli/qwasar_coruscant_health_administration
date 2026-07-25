@@ -57,6 +57,25 @@ Uploaded documents are Fernet-encrypted at rest by
 ephemeral** — files written by a dyno do not survive a restart or redeploy, so
 on-dyno storage is only appropriate for a demo/MVP deploy.
 
+## Build & release lifecycle
+
+Nothing here is manual — each deploy runs it automatically:
+
+1. **Build** — the Python buildpack installs `requirements.txt` and runs
+   `manage.py collectstatic --noinput`. Static files are served by
+   **WhiteNoise** (`whitenoise.storage.CompressedManifestStaticFilesStorage`),
+   so no separate static host or CDN is required.
+2. **Release** — the `Procfile` `release:` line runs `manage.py migrate --noinput`
+   against the provisioned Postgres before the new dynos go live. (`app.json`'s
+   `postdeploy` covers the same for one-click provisions.)
+3. **Run** — `web: gunicorn config.wsgi` serves the app; TLS is terminated at the
+   Heroku router and forwarded via `X-Forwarded-Proto`, which `prod.py` honours
+   for `SECURE_SSL_REDIRECT`.
+
+Secrets never live in the repo (`.env` is gitignored) — they are Heroku config
+vars only, and `config.settings.prod` refuses to boot if `SECRET_KEY` or
+`DOCUMENT_ENCRYPTION_KEY` is missing.
+
 For durable storage, swap the storage backend for S3 (or another object store)
 without touching the models, views, or access checks: point
 `EncryptedFileSystemStorage` at an S3 base (or subclass Django's S3 storage),

@@ -181,7 +181,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] GitHub/Gitea Actions: lint (`ruff`/`flake8`) + tests + coverage gate.
 - [x] Auto-deploy on main/dev merge.
 - [x] Provision Postgres + object storage in cloud.
-- [ ] `collectstatic`, migrations on deploy, env secrets.
+- [x] `collectstatic`, migrations on deploy, env secrets.
 - [ ] **Write live URL to `my_coruscant_health_administration_url.txt` (URL only).**
 
 ### M9 — Hardening & handoff
