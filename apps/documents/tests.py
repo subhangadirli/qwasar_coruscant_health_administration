@@ -10,6 +10,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.accounts.models import PatientDoctorAssignment, Role
+from apps.audit.models import AuditAction, AuditLog
 
 from .models import Document
 
@@ -177,3 +178,17 @@ class DownloadAccessTests(DocumentTestCase):
             handle.write(token)
         self.client.force_login(self.patient)
         self.assertEqual(self.client.get(self.url).status_code, 400)
+
+    def test_a_successful_download_is_audited(self):
+        self.client.force_login(self.patient)
+        self.client.get(self.url)
+        entry = AuditLog.objects.get(action=AuditAction.DOCUMENT_DOWNLOADED)
+        self.assertEqual(entry.actor, self.patient)
+        self.assertEqual(entry.target, "vitals.txt")
+
+    def test_a_denied_download_is_not_audited(self):
+        self.client.force_login(make_user("pat3", Role.PATIENT))
+        self.client.get(self.url)
+        self.assertFalse(
+            AuditLog.objects.filter(action=AuditAction.DOCUMENT_DOWNLOADED).exists()
+        )

@@ -24,6 +24,8 @@ from apps.accounts.mixins import (
     RoleRequiredMixin,
 )
 from apps.accounts.models import PatientDoctorAssignment, Role
+from apps.audit.models import AuditAction
+from apps.audit.services import record as audit
 
 from .forms import HealthReadingForm, ReadingCSVUploadForm, ReportForm
 from .ingest import parse_reading_row
@@ -335,6 +337,12 @@ class PublishReportView(DoctorRequiredMixin, View):
             pk=pk,
         )
         report.publish()
+        audit(
+            AuditAction.REPORT_PUBLISHED,
+            actor=request.user,
+            target=report.patient.username,
+            detail=f"report #{report.pk}",
+        )
         messages.success(
             request, f"Published to {report.patient.username}."
         )

@@ -197,7 +197,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > S3 swap is the documented follow-up behind the same storage seam.
 
 ### M9 — Hardening & handoff
-- [ ] Security review (HTTPS, CSRF, secure cookies, `DEBUG=False`, ALLOWED_HOSTS).
+- [x] Security review (HTTPS, CSRF, secure cookies, `DEBUG=False`, ALLOWED_HOSTS).
 - [ ] Seed/demo data & admin account.
 - [ ] Coverage report; finalize docs.
 - [ ] Peer-review readiness.
@@ -211,7 +211,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] RBAC enforced server-side on every view (not just UI hiding).
 - [x] `DEBUG=False`, `SECURE_SSL_REDIRECT`, HSTS, secure/HTTPOnly cookies in prod.
 - [x] CSRF on all forms.
-- [ ] Audit logging for sensitive actions.
+- [x] Audit logging for sensitive actions.
 - [x] No secrets in git; `.env` gitignored.
 
 > `manage.py check --deploy` passes clean against `config.settings.prod`.
@@ -219,9 +219,11 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > environment — a dev default in `dev.py`, fail-fast in `prod.py` — and served
 > only through an access-checked download view, so there is no public bucket.
 > Expiring signed URLs are the S3 variant of that same check and arrive with
-> object storage in M8. Audit logging is still open: rejection is recorded via
-> `is_rejected`, but approvals, logins and report access are not logged
-> anywhere.
+> object storage in M8. Audit logging landed in M9: the `apps.audit` app writes
+> an append-only `AuditLog` row for logins, approvals, rejections, emergency
+> intakes, report publications and document downloads, via one `record()` helper
+> (and Django's `user_logged_in` signal). The admin view is read-only, so the
+> trail cannot be edited or deleted through the app.
 
 ---
 

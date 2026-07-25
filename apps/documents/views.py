@@ -12,6 +12,8 @@ from django.views.generic import CreateView
 
 from apps.accounts.mixins import AssignedPatientMixin, RoleRequiredMixin
 from apps.accounts.models import PatientDoctorAssignment, Role
+from apps.audit.models import AuditAction
+from apps.audit.services import record as audit
 
 from .forms import DocumentUploadForm
 from .models import Document, sha256_of
@@ -103,6 +105,12 @@ class DocumentDownloadView(LoginRequiredMixin, View):
         data = document.file.open("rb").read()
         if hashlib.sha256(data).hexdigest() != document.checksum:
             raise SuspiciousOperation("Document failed its integrity check.")
+        audit(
+            AuditAction.DOCUMENT_DOWNLOADED,
+            actor=request.user,
+            target=document.original_name,
+            detail=f"patient {document.patient.username}",
+        )
         return FileResponse(
             BytesIO(data),
             as_attachment=True,

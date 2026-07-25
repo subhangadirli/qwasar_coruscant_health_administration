@@ -3,6 +3,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, View
 
+from apps.audit.models import AuditAction
+from apps.audit.services import record as audit
+
 from .forms import EmergencyIntakeForm, RegistrationForm
 from .intake import admit_emergency_patient
 from .mixins import EmergencyRequiredMixin, RoleRequiredMixin
@@ -49,6 +52,11 @@ class EmergencyIntakeView(EmergencyRequiredMixin, FormView):
             admitted_by=self.request.user,
             presenting_complaint=form.cleaned_data["presenting_complaint"],
         )
+        audit(
+            AuditAction.EMERGENCY_INTAKE,
+            actor=self.request.user,
+            target=intake.patient.username,
+        )
         # The password is rendered once and never stored raw, so it cannot
         # leak through a later request.
         context = self.get_context_data(
@@ -89,6 +97,7 @@ class ApproveUserView(AdminRequiredMixin, View):
         )
         user.is_approved = True
         user.save(update_fields=["is_approved"])
+        audit(AuditAction.USER_APPROVED, actor=request.user, target=user.username)
         messages.success(request, f"Approved {user.username}.")
         return redirect("accounts:approvals")
 
@@ -101,5 +110,6 @@ class RejectUserView(AdminRequiredMixin, View):
         user.is_rejected = True
         user.is_active = False
         user.save(update_fields=["is_rejected", "is_active"])
+        audit(AuditAction.USER_REJECTED, actor=request.user, target=user.username)
         messages.info(request, f"Rejected {user.username}.")
         return redirect("accounts:approvals")
