@@ -1,0 +1,11 @@
+{% comment %}
+A header nav link that marks itself active. Render with:
+  {% include "partials/_nav_link.html" with view="records:patients" label="Patients" %}
+`view` is a URL name; the link is highlighted and gets aria-current when it is
+the page being viewed.
+{% endcomment %}
+{% if request.resolver_match.view_name == view %}
+  <a href="{% url view %}" aria-current="page" class="font-semibold text-white">{{ label }}</a>
+{% else %}
+  <a href="{% url view %}" class="opacity-80 hover:opacity-100">{{ label }}</a>
+{% endif %}

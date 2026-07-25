@@ -163,7 +163,19 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ### M7 — UI/UX polish
 - [x] Consistent responsive design, role-aware nav.
 - [x] Empty/error/loading states, form validation UX.
-- [ ] Accessibility pass.
+- [x] Accessibility pass.
+
+> Shared partials remove the per-template drift: `partials/_field.html` renders
+> every form field (label tied to its input, required marker, per-field errors)
+> against one base-level `.field` input style, so the inline `<style>` blocks
+> and ad-hoc widget classes are gone. `partials/_empty.html` and
+> `partials/_nav_link.html` do the same for empty states and the role-aware nav,
+> the latter marking the active link with `aria-current`. Flash messages are now
+> colour-coded by level and announced via `aria-live`; a small unobtrusive
+> script gives submit buttons a loading state and blocks double-submits. The
+> accessibility pass added a skip link, the `#main` landmark, `aria-hidden` on
+> decorative emoji, and visible keyboard focus rings. The Tailwind CDN stays for
+> now — a build step is the one thing still deferred to M8.
 
 ### M8 — CI/CD & deployment
 - [ ] GitHub/Gitea Actions: lint (`ruff`/`flake8`) + tests + coverage gate.

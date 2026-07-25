@@ -41,31 +41,35 @@
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 antialiased">
+  <a href="#main"
+     class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-white">
+    Skip to content
+  </a>
   <header class="bg-slate-900 text-white">
     <div class="mx-auto max-w-6xl px-4 py-4 flex flex-wrap items-center justify-between gap-3">
       <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 font-semibold">
-        <span class="text-2xl">🩺</span>
+        <span class="text-2xl" aria-hidden="true">🩺</span>
         <span>Coruscant Health Administration</span>
       </a>
-      <nav class="text-sm flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+      <nav aria-label="Primary" class="text-sm flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
         {% if user.is_authenticated %}
           {% if user.role == 'admin' or user.is_staff %}
-            <a href="{% url 'accounts:approvals' %}" class="opacity-80 hover:opacity-100">Approvals</a>
+            {% include "partials/_nav_link.html" with view="accounts:approvals" label="Approvals" %}
           {% endif %}
           {% if user.is_approved %}
             {% if user.role == 'doctor' %}
-              <a href="{% url 'records:patients' %}" class="opacity-80 hover:opacity-100">Patients</a>
-              <a href="{% url 'records:doctor_reports' %}" class="opacity-80 hover:opacity-100">Reports</a>
-              <a href="{% url 'orders:doctor_orders' %}" class="opacity-80 hover:opacity-100">Orders</a>
+              {% include "partials/_nav_link.html" with view="records:patients" label="Patients" %}
+              {% include "partials/_nav_link.html" with view="records:doctor_reports" label="Reports" %}
+              {% include "partials/_nav_link.html" with view="orders:doctor_orders" label="Orders" %}
             {% elif user.role == 'patient' %}
-              <a href="{% url 'records:readings' %}" class="opacity-80 hover:opacity-100">Readings</a>
-              <a href="{% url 'records:reports' %}" class="opacity-80 hover:opacity-100">Reports</a>
-              <a href="{% url 'orders:patient_orders' %}" class="opacity-80 hover:opacity-100">Orders</a>
-              <a href="{% url 'documents:patient_documents' %}" class="opacity-80 hover:opacity-100">Documents</a>
+              {% include "partials/_nav_link.html" with view="records:readings" label="Readings" %}
+              {% include "partials/_nav_link.html" with view="records:reports" label="Reports" %}
+              {% include "partials/_nav_link.html" with view="orders:patient_orders" label="Orders" %}
+              {% include "partials/_nav_link.html" with view="documents:patient_documents" label="Documents" %}
             {% elif user.role == 'department' %}
-              <a href="{% url 'orders:department_queue' %}" class="opacity-80 hover:opacity-100">Queue</a>
+              {% include "partials/_nav_link.html" with view="orders:department_queue" label="Queue" %}
             {% elif user.role == 'emergency' %}
-              <a href="{% url 'accounts:emergency_intake' %}" class="opacity-80 hover:opacity-100">Intake</a>
+              {% include "partials/_nav_link.html" with view="accounts:emergency_intake" label="Intake" %}
             {% endif %}
           {% endif %}
           <span class="opacity-80">{{ user.username }} · {{ user.get_role_display }}</span>
@@ -74,14 +78,14 @@
             <button type="submit" class="rounded bg-white/10 px-3 py-1 hover:bg-white/20">Log out</button>
           </form>
         {% else %}
-          <a href="{% url 'accounts:login' %}" class="opacity-80 hover:opacity-100">Log in</a>
+          {% include "partials/_nav_link.html" with view="accounts:login" label="Log in" %}
           <a href="{% url 'accounts:register' %}" class="rounded bg-emerald-500 px-3 py-1 font-medium hover:bg-emerald-400">Register</a>
         {% endif %}
       </nav>
     </div>
   </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-8">
+  <main id="main" class="mx-auto max-w-6xl px-4 py-8">
     {% if messages %}
       <div class="mb-4 space-y-2" aria-live="polite">
         {% for message in messages %}
