@@ -132,7 +132,15 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ### M5 — Emergency intake
 - [x] Minimal fast-intake form (create patient in seconds).
 - [x] Auto-provisioning / expedited approval path.
-- [ ] Tests.
+- [x] Tests.
+
+> The intake screen (`accounts:emergency_intake`, emergency role only) takes a
+> name and an optional presenting complaint and calls
+> `accounts.intake.admit_emergency_patient`, which creates an already-approved
+> patient in one transaction — the expedited path, so an incoming patient never
+> waits in the admin queue. The account is auto-provisioned with a generated
+> password shown once (only its hash is stored), and the desk sees a scoped list
+> of its own recent admissions.
 
 ### M6 — Document management (encrypted)
 - [ ] Upload for patients & doctors.
@@ -180,7 +188,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ## 6. Deliverables (grading-facing)
 - [x] Working Django app in the repo.
 - [ ] `my_coruscant_health_administration_url.txt` — live URL only.
-- [x] Unit tests (224 passing).
+- [x] Unit tests (239 passing).
 - [ ] Passing CI.
 - [x] Completed `README.md`.
 - [x] This `roadmap.md`.
