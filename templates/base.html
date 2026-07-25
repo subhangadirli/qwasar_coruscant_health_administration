@@ -32,6 +32,8 @@
               <a href="{% url 'orders:patient_orders' %}" class="opacity-80 hover:opacity-100">Orders</a>
             {% elif user.role == 'department' %}
               <a href="{% url 'orders:department_queue' %}" class="opacity-80 hover:opacity-100">Queue</a>
+            {% elif user.role == 'emergency' %}
+              <a href="{% url 'accounts:emergency_intake' %}" class="opacity-80 hover:opacity-100">Intake</a>
             {% endif %}
           {% endif %}
           <span class="opacity-80">{{ user.username }} · {{ user.get_role_display }}</span>

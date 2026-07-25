@@ -15,6 +15,11 @@ urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("register/done/", views.register_done, name="register_done"),
     path("pending/", views.pending, name="pending"),
+    path(
+        "emergency/intake/",
+        views.EmergencyIntakeView.as_view(),
+        name="emergency_intake",
+    ),
     path("approvals/", views.PendingApprovalsView.as_view(), name="approvals"),
     path(
         "approvals/<int:pk>/approve/",

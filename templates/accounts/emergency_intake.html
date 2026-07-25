@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Emergency intake · CHA{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  {% include "dashboard/_shell.html" with heading="Emergency intake" subheading="Get an incoming patient into the system in seconds." %}
+
+  {% if admitted %}
+    <div class="mb-6 rounded-xl bg-emerald-50 p-5 ring-1 ring-emerald-100">
+      <h2 class="text-sm font-semibold text-emerald-800">Patient admitted</h2>
+      <p class="mt-1 text-sm text-slate-700">
+        Record created for
+        <span class="font-semibold">{{ admitted.patient.get_full_name|default:admitted.patient.username }}</span>
+        under the reference
+        <code class="rounded bg-white px-1.5 py-0.5 text-emerald-700">{{ admitted.patient.username }}</code>.
+        The account is approved and ready for readings and orders.
+      </p>
+    </div>
+  {% endif %}
+
+  <div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+    <form method="post" class="space-y-5">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">
+            {{ field.label }}{% if not field.field.required %} <span class="text-slate-400">(optional)</span>{% endif %}
+          </label>
+          <div class="mt-1">{{ field }}</div>
+          {% for error in field.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <button type="submit"
+              class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-500">
+        Admit patient
+      </button>
+    </form>
+    <p class="mt-4 text-xs text-slate-500">
+      Emergency admissions skip the administrator approval queue. Demographics
+      and login credentials can be filled in once the patient is stable.
+    </p>
+  </div>
+</div>
+{% endblock %}

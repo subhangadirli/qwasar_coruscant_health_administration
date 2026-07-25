@@ -121,3 +121,38 @@ class PatientDoctorAssignment(models.Model):
 
     def __str__(self):
         return f"{self.patient.username} to {self.doctor.username}"
+
+
+class EmergencyIntake(models.Model):
+    """A patient admitted through emergency fast-intake.
+
+    Emergency accounts create these to get an incoming patient into the
+    system in seconds. The patient is auto-provisioned and approved on the
+    spot, skipping the admin approval queue an emergency cannot wait on, and
+    this row records who admitted them and why.
+    """
+
+    patient = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="emergency_intake",
+        limit_choices_to={"role": Role.PATIENT},
+    )
+    admitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        # The admission is part of the patient's record, so it outlives the
+        # account of the clinician who entered it.
+        on_delete=models.PROTECT,
+        related_name="emergency_admissions",
+        limit_choices_to={"role": Role.EMERGENCY},
+    )
+    presenting_complaint = models.TextField(
+        blank=True, help_text="What the patient presented with, if known."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"Emergency intake of {self.patient.username}"

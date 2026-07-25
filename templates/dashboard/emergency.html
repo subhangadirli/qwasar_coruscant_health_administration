@@ -2,8 +2,9 @@
 {% block title %}Emergency dashboard · CHA{% endblock %}
 {% block content %}
 {% include "dashboard/_shell.html" with heading="Emergency Services" subheading="Fast patient intake." %}
-<div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-  <h2 class="font-semibold text-slate-800">New patient intake</h2>
-  <p class="mt-1 text-sm text-slate-500">Rapidly register incoming patients. <em>(M5)</em></p>
-</div>
+<a href="{% url 'accounts:emergency_intake' %}"
+   class="block rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+  <h2 class="font-semibold text-slate-800">New patient intake →</h2>
+  <p class="mt-1 text-sm text-slate-500">Register an incoming patient in seconds, no approval wait.</p>
+</a>
 {% endblock %}

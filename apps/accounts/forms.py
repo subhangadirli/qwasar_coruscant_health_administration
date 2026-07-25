@@ -33,3 +33,32 @@ class RegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class EmergencyIntakeForm(forms.Form):
+    """Fast intake: the least a clinician must type to create a record."""
+
+    _INPUT = (
+        "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm "
+        "focus:border-emerald-500 focus:outline-none focus:ring-1 "
+        "focus:ring-emerald-500"
+    )
+
+    full_name = forms.CharField(
+        max_length=150,
+        label="Patient name",
+        widget=forms.TextInput(
+            attrs={"autofocus": True, "placeholder": "Full name", "class": _INPUT}
+        ),
+    )
+    presenting_complaint = forms.CharField(
+        required=False,
+        label="Presenting complaint",
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "placeholder": "Optional — what they came in with",
+                "class": _INPUT,
+            }
+        ),
+    )

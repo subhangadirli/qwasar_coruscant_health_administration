@@ -1,10 +1,11 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, View
+from django.views.generic import CreateView, FormView, ListView, View
 
-from .forms import RegistrationForm
-from .mixins import RoleRequiredMixin
+from .forms import EmergencyIntakeForm, RegistrationForm
+from .intake import admit_emergency_patient
+from .mixins import EmergencyRequiredMixin, RoleRequiredMixin
 from .models import Role, User
 
 
@@ -28,6 +29,27 @@ def register_done(request):
 def pending(request):
     """Shown to logged-in users still awaiting admin approval."""
     return render(request, "accounts/pending.html")
+
+
+class EmergencyIntakeView(EmergencyRequiredMixin, FormView):
+    """Fast intake screen for the emergency desk.
+
+    A successful submission provisions an approved patient and re-renders the
+    screen with a confirmation and a blank form, since a desk admits patients
+    one after another.
+    """
+
+    template_name = "accounts/emergency_intake.html"
+    form_class = EmergencyIntakeForm
+
+    def form_valid(self, form):
+        intake = admit_emergency_patient(
+            full_name=form.cleaned_data["full_name"],
+            admitted_by=self.request.user,
+            presenting_complaint=form.cleaned_data["presenting_complaint"],
+        )
+        context = self.get_context_data(form=self.form_class(), admitted=intake)
+        return self.render_to_response(context)
 
 
 class AdminRequiredMixin(RoleRequiredMixin):

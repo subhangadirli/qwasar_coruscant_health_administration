@@ -130,7 +130,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > that same check.
 
 ### M5 — Emergency intake
-- [ ] Minimal fast-intake form (create patient in seconds).
+- [x] Minimal fast-intake form (create patient in seconds).
 - [ ] Auto-provisioning / expedited approval path.
 - [ ] Tests.
 
