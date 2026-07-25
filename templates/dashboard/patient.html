@@ -18,5 +18,10 @@
     <h2 class="font-semibold text-slate-800">Service orders →</h2>
     <p class="mt-1 text-sm text-slate-500">Scans and lab work, with results when ready.</p>
   </a>
+  <a href="{% url 'documents:patient_documents' %}"
+     class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-300">
+    <h2 class="font-semibold text-slate-800">Documents →</h2>
+    <p class="mt-1 text-sm text-slate-500">Upload and download your files, encrypted at rest.</p>
+  </a>
 </div>
 {% endblock %}

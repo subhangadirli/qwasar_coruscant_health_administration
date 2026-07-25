@@ -1,0 +1,34 @@
+{% comment %}Renders a documents table. Expects `documents` in context.{% endcomment %}
+{% if documents %}
+  <div class="mt-6 overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead class="text-slate-500">
+        <tr class="border-b">
+          <th class="py-2">Name</th>
+          <th class="py-2">Uploaded by</th>
+          <th class="py-2">Size</th>
+          <th class="py-2">Added</th>
+          <th class="py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for document in documents %}
+          <tr class="border-b last:border-0">
+            <td class="py-3 font-medium text-slate-800">{{ document.original_name }}</td>
+            <td class="py-3 text-slate-500">{{ document.owner.username }}</td>
+            <td class="py-3 text-slate-500">{{ document.size|filesizeformat }}</td>
+            <td class="py-3 text-slate-500">{{ document.uploaded_at|date:"M d, Y H:i" }}</td>
+            <td class="py-3 text-right">
+              <a href="{% url 'documents:download_document' document.pk %}"
+                 class="font-medium text-emerald-700 hover:text-emerald-900">Download</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
+    No documents yet.
+  </p>
+{% endif %}

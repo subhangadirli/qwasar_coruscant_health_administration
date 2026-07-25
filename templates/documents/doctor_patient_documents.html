@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.username }} · Documents · CHA{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+  <a href="{% url 'records:patient_detail' patient.pk %}"
+     class="text-sm text-slate-500 hover:text-slate-700">&larr; {{ patient.username }}'s record</a>
+
+  <h1 class="mt-4 text-2xl font-bold text-slate-900">Documents</h1>
+  <p class="mt-1 text-sm text-slate-500">
+    Files on {{ patient.get_full_name|default:patient.username }}'s record, encrypted at rest.
+  </p>
+
+  <form method="post" enctype="multipart/form-data"
+        class="mt-6 flex flex-wrap items-end gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+    {% csrf_token %}
+    <div class="grow">
+      {{ form.file }}
+      {% for error in form.file.errors %}
+        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+      {% endfor %}
+    </div>
+    <button type="submit"
+            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+      Upload
+    </button>
+  </form>
+
+  {% include "documents/_document_list.html" %}
+</div>
+{% endblock %}

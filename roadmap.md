@@ -143,7 +143,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > of its own recent admissions.
 
 ### M6 — Document management (encrypted)
-- [ ] Upload for patients & doctors.
+- [x] Upload for patients & doctors.
 - [ ] Encrypt at rest (Fernet / KMS-backed); private storage + signed URLs.
 - [ ] Access control on download; checksum integrity.
 - [ ] Tests: encryption round-trip, unauthorized-access denial.
