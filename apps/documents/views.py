@@ -1,5 +1,9 @@
+import hashlib
+from io import BytesIO
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import SuspiciousOperation
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -92,8 +96,15 @@ class DocumentDownloadView(LoginRequiredMixin, View):
         )
         if not self._may_access(request.user, document):
             raise Http404("No such document.")
+
+        # The storage layer decrypts on open; verify the plaintext is byte-for
+        # byte what was uploaded before handing it back, so silent corruption
+        # or tampering is refused rather than served.
+        data = document.file.open("rb").read()
+        if hashlib.sha256(data).hexdigest() != document.checksum:
+            raise SuspiciousOperation("Document failed its integrity check.")
         return FileResponse(
-            document.file.open("rb"),
+            BytesIO(data),
             as_attachment=True,
             filename=document.original_name,
         )
