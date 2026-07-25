@@ -5,6 +5,8 @@ from django.db import models
 
 from apps.accounts.models import Role
 
+from .storage import encrypted_storage
+
 
 def sha256_of(upload):
     """Hex SHA-256 of an uploaded file, read in chunks and rewound after.
@@ -42,7 +44,7 @@ class Document(models.Model):
         related_name="documents",
         limit_choices_to={"role": Role.PATIENT},
     )
-    file = models.FileField(upload_to="documents/")
+    file = models.FileField(upload_to="documents/", storage=encrypted_storage)
     original_name = models.CharField(max_length=255)
     content_type = models.CharField(max_length=100, blank=True)
     checksum = models.CharField(
