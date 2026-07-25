@@ -37,11 +37,14 @@ DOCUMENT_ENCRYPTION_KEY = env("DOCUMENT_ENCRYPTION_KEY")
 
 DEBUG = env_bool("DEBUG", False)
 
-ALLOWED_HOSTS = [h for h in env("ALLOWED_HOSTS", "").split(",") if h]
+def env_list(key):
+    # Comma-separated env value → list, tolerating stray whitespace around items.
+    return [item.strip() for item in env(key, "").split(",") if item.strip()]
 
-CSRF_TRUSTED_ORIGINS = [
-    o for o in env("CSRF_TRUSTED_ORIGINS", "").split(",") if o
-]
+
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
+
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 
 # Application definition
