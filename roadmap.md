@@ -118,12 +118,16 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] Department order queue (receive).
 - [x] Execute + upload result (with document).
 - [x] Status transitions surfaced to doctor & patient.
-- [ ] Tests.
+- [x] Tests.
 
 > The `ServiceOrder` model and its transitions (`start`, `complete`,
-> `cancel`) landed with M3 so both sides share one set of rules; what is
-> left here is the department-facing queue, `OrderResult`, and surfacing
-> status to the patient.
+> `cancel`) landed with M3 so both sides share one set of rules. M4 added
+> the department-facing queue (scoped by `department__staff`), the
+> `OrderResult` model with an optional attachment, and read-only order
+> views for the patient. Result files are served only through an
+> access-checked download view (doctor, patient, or department staff),
+> never a public media URL — M6 swaps in encrypted private storage behind
+> that same check.
 
 ### M5 — Emergency intake
 - [ ] Minimal fast-intake form (create patient in seconds).
@@ -176,7 +180,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ## 6. Deliverables (grading-facing)
 - [x] Working Django app in the repo.
 - [ ] `my_coruscant_health_administration_url.txt` — live URL only.
-- [x] Unit tests (198 passing).
+- [x] Unit tests (224 passing).
 - [ ] Passing CI.
 - [x] Completed `README.md`.
 - [x] This `roadmap.md`.
