@@ -1,5 +1,7 @@
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
@@ -10,8 +12,8 @@ from apps.accounts.mixins import (
     DoctorRequiredMixin,
 )
 
-from .forms import ServiceOrderForm
-from .models import OrderStatus, ServiceOrder
+from .forms import OrderResultForm, ServiceOrderForm
+from .models import OrderResult, OrderStatus, ServiceOrder
 
 
 class DoctorOrdersMixin(DoctorRequiredMixin):
@@ -108,6 +110,13 @@ class DepartmentOrderDetailView(DepartmentQueueMixin, DetailView):
     template_name = "orders/department_order_detail.html"
     context_object_name = "order"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Offer the result form only while the order is being worked.
+        if self.object.status == OrderStatus.IN_PROGRESS:
+            context.setdefault("form", OrderResultForm())
+        return context
+
 
 class StartOrderView(DepartmentQueueMixin, View):
     """Accept a queued order into progress."""
@@ -121,6 +130,62 @@ class StartOrderView(DepartmentQueueMixin, View):
         else:
             messages.success(request, f"Started {order.procedure}.")
         return redirect("orders:department_order", pk=order.pk)
+
+
+class CompleteOrderView(DepartmentQueueMixin, View):
+    """Record a result and mark the order completed."""
+
+    def post(self, request, pk):
+        order = get_object_or_404(self.get_queryset(), pk=pk)
+        if order.status != OrderStatus.IN_PROGRESS:
+            messages.error(request, "Only an in-progress order can be completed.")
+            return redirect("orders:department_order", pk=order.pk)
+
+        form = OrderResultForm(request.POST, request.FILES)
+        if not form.is_valid():
+            context = self.get_detail_context(order, form)
+            return self.render_to_response(context)
+
+        result = form.save(commit=False)
+        result.order = order
+        result.uploaded_by = request.user
+        result.save()
+        order.complete()
+        messages.success(request, f"Completed {order.procedure}.")
+        return redirect("orders:department_order", pk=order.pk)
+
+    def get_detail_context(self, order, form):
+        return {"order": order, "form": form}
+
+    def render_to_response(self, context):
+        return render(
+            self.request, "orders/department_order_detail.html", context
+        )
+
+
+class OrderResultDownloadView(LoginRequiredMixin, View):
+    """Stream a result's attachment to anyone entitled to the order.
+
+    Serving the file through a permission-checked view (not a public media
+    URL) is what keeps results private; M6 swaps the storage for encrypted
+    private buckets behind this same check.
+    """
+
+    def get(self, request, pk):
+        result = get_object_or_404(
+            OrderResult.objects.select_related("order", "order__department"), pk=pk
+        )
+        if not result.attachment:
+            raise Http404("This result has no attachment.")
+        if not self._may_access(request.user, result.order):
+            raise Http404("No such result.")
+        return FileResponse(result.attachment.open("rb"), as_attachment=True)
+
+    @staticmethod
+    def _may_access(user, order):
+        if user == order.patient or user == order.doctor:
+            return True
+        return order.department.staff.filter(pk=user.pk).exists()
 
 
 class CancelOrderView(DoctorRequiredMixin, View):

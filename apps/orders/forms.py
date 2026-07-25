@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Department, ServiceOrder
+from .models import Department, OrderResult, ServiceOrder
 
 
 class ServiceOrderForm(forms.ModelForm):
@@ -22,3 +22,16 @@ class ServiceOrderForm(forms.ModelForm):
         self.fields["department"].queryset = Department.objects.filter(
             is_active=True
         )
+
+
+class OrderResultForm(forms.ModelForm):
+    """A department recording the outcome of an order.
+
+    ``order`` and ``uploaded_by`` are set from the URL and session, not the
+    form, so they cannot be spoofed by the submitter.
+    """
+
+    class Meta:
+        model = OrderResult
+        fields = ("summary", "attachment")
+        widgets = {"summary": forms.Textarea(attrs={"rows": 5})}

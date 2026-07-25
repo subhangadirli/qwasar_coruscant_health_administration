@@ -26,4 +26,14 @@ urlpatterns = [
         views.StartOrderView.as_view(),
         name="start_order",
     ),
+    path(
+        "queue/<int:pk>/complete/",
+        views.CompleteOrderView.as_view(),
+        name="complete_order",
+    ),
+    path(
+        "results/<int:pk>/download/",
+        views.OrderResultDownloadView.as_view(),
+        name="download_result",
+    ),
 ]

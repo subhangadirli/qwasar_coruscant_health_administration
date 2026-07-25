@@ -158,3 +158,34 @@ class ServiceOrder(models.Model):
 
     def __str__(self):
         return f"{self.procedure} for {self.patient.username}"
+
+
+class OrderResult(models.Model):
+    """The outcome a department records when it completes an order.
+
+    One result per order. The ``summary`` is the readable finding; the
+    optional ``attachment`` is a supporting file (scan, PDF report). For now
+    the file lives in plain storage and is only ever served through an
+    access-controlled download view, never a public URL. M6 replaces the
+    storage layer with encryption at rest and private buckets without
+    touching these fields or the download URL.
+    """
+
+    order = models.OneToOneField(
+        ServiceOrder, on_delete=models.CASCADE, related_name="result"
+    )
+    summary = models.TextField(help_text="The finding the doctor and patient read.")
+    attachment = models.FileField(
+        upload_to="order_results/",
+        blank=True,
+        help_text="Optional supporting file, for example a scan or PDF.",
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="uploaded_results",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Result for {self.order.procedure}"

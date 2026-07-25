@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Department, ServiceOrder
+from .models import Department, OrderResult, ServiceOrder
 
 
 @admin.register(Department)
@@ -32,3 +32,11 @@ class ServiceOrderAdmin(admin.ModelAdmin):
     autocomplete_fields = ("patient", "doctor", "department")
     readonly_fields = ("created_at", "updated_at", "completed_at")
     date_hierarchy = "created_at"
+
+
+@admin.register(OrderResult)
+class OrderResultAdmin(admin.ModelAdmin):
+    list_display = ("order", "uploaded_by", "uploaded_at")
+    search_fields = ("order__procedure", "summary")
+    autocomplete_fields = ("order", "uploaded_by")
+    readonly_fields = ("uploaded_at",)
