@@ -70,9 +70,7 @@
       </nav>
     {% endif %}
   {% else %}
-    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
-      No readings yet.
-    </p>
+    {% include "partials/_empty.html" with icon="📈" message="No readings yet." %}
   {% endif %}
 </div>
 {% endblock %}

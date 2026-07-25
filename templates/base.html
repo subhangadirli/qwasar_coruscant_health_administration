@@ -83,9 +83,18 @@
 
   <main class="mx-auto max-w-6xl px-4 py-8">
     {% if messages %}
-      {% for message in messages %}
-        <div class="mb-3 rounded-md border px-4 py-2 text-sm">{{ message }}</div>
-      {% endfor %}
+      <div class="mb-4 space-y-2" aria-live="polite">
+        {% for message in messages %}
+          <div role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}"
+               class="rounded-lg border px-4 py-2.5 text-sm
+               {% if message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800
+               {% elif message.tags == 'error' %}border-red-200 bg-red-50 text-red-800
+               {% elif message.tags == 'warning' %}border-amber-200 bg-amber-50 text-amber-800
+               {% else %}border-slate-200 bg-white text-slate-700{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
     {% endif %}
     {% block content %}{% endblock %}
   </main>
@@ -95,5 +104,24 @@
   </footer>
 
   {% block scripts %}{% endblock %}
+
+  <script>
+    // Progressive enhancement: on submit, show a loading state on the button
+    // and block a double-submit. Deferred so the button's value still posts.
+    document.addEventListener("submit", function (event) {
+      var form = event.target;
+      if ((form.getAttribute("method") || "get").toLowerCase() === "get") return;
+      var button = form.querySelector("button[type=submit], button:not([type])");
+      if (!button || button.dataset.loading) return;
+      button.dataset.loading = "1";
+      var label = button.dataset.loadingLabel || "Working…";
+      setTimeout(function () {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        button.style.opacity = "0.7";
+        button.textContent = label;
+      }, 0);
+    });
+  </script>
 </body>
 </html>

@@ -162,7 +162,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 
 ### M7 — UI/UX polish
 - [x] Consistent responsive design, role-aware nav.
-- [ ] Empty/error/loading states, form validation UX.
+- [x] Empty/error/loading states, form validation UX.
 - [ ] Accessibility pass.
 
 ### M8 — CI/CD & deployment

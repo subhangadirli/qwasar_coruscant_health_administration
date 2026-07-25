@@ -1,0 +1,9 @@
+{% comment %}
+Consistent empty-state block. Render with:
+  {% include "partials/_empty.html" with message="Nothing here yet." icon="📄" %}
+`icon` is optional and decorative.
+{% endcomment %}
+<div class="mt-6 rounded-lg bg-slate-50 px-4 py-12 text-center">
+  <div class="text-3xl" aria-hidden="true">{{ icon|default:"📭" }}</div>
+  <p class="mt-2 text-sm text-slate-500">{{ message }}</p>
+</div>

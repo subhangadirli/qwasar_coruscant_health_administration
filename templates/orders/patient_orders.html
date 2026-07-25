@@ -47,9 +47,7 @@
       </nav>
     {% endif %}
   {% else %}
-    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
-      Your doctor has not ordered any scans or lab work yet.
-    </p>
+    {% include "partials/_empty.html" with icon="🧪" message="Your doctor has not ordered any scans or lab work yet." %}
   {% endif %}
 </div>
 {% endblock %}

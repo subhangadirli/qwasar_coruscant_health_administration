@@ -37,9 +37,7 @@
       </nav>
     {% endif %}
   {% else %}
-    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
-      Nothing from your doctor yet.
-    </p>
+    {% include "partials/_empty.html" with icon="📄" message="Nothing from your doctor yet." %}
   {% endif %}
 </div>
 {% endblock %}

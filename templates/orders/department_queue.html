@@ -61,13 +61,11 @@
       </nav>
     {% endif %}
   {% else %}
-    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
-      {% if scope == 'open' %}
-        Your queue is clear. New orders from doctors will appear here.
-      {% else %}
-        No completed or cancelled orders yet.
-      {% endif %}
-    </p>
+    {% if scope == 'open' %}
+      {% include "partials/_empty.html" with icon="📥" message="Your queue is clear. New orders from doctors will appear here." %}
+    {% else %}
+      {% include "partials/_empty.html" with icon="📥" message="No completed or cancelled orders yet." %}
+    {% endif %}
   {% endif %}
 </div>
 {% endblock %}

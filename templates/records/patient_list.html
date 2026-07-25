@@ -49,9 +49,7 @@
       </nav>
     {% endif %}
   {% else %}
-    <p class="mt-6 rounded-lg bg-slate-50 px-4 py-10 text-center text-slate-500">
-      No patients assigned to you yet. An administrator sets up assignments.
-    </p>
+    {% include "partials/_empty.html" with icon="👥" message="No patients assigned to you yet. An administrator sets up assignments." %}
   {% endif %}
 </div>
 {% endblock %}
