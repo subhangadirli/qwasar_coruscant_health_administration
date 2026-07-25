@@ -131,7 +131,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 
 ### M5 — Emergency intake
 - [x] Minimal fast-intake form (create patient in seconds).
-- [ ] Auto-provisioning / expedited approval path.
+- [x] Auto-provisioning / expedited approval path.
 - [ ] Tests.
 
 ### M6 — Document management (encrypted)

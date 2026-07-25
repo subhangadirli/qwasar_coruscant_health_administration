@@ -24,27 +24,33 @@ def _unique_username(full_name):
             return username
 
 
+# Long enough to resist guessing, short enough to read aloud at a desk.
+_TEMP_PASSWORD_LENGTH = 12
+
+
 @transaction.atomic
 def admit_emergency_patient(full_name, admitted_by, presenting_complaint=""):
-    """Create an approved patient and record the emergency admission.
+    """Provision an approved patient and record the emergency admission.
 
-    The account is approved on creation so it never waits in the admin queue,
-    and it is given no usable password yet: the goal here is a record a
-    clinician can attach readings and orders to immediately. Issuing login
-    credentials is a deliberate, separate step.
+    Returns ``(intake, raw_password)``. The account is approved on creation so
+    it never waits in the admin queue — the expedited path an emergency cannot
+    wait on — and it is auto-provisioned with a generated password so it is a
+    real, usable login without the desk inventing credentials. The raw password
+    is returned to be shown once; only its hash is ever stored.
     """
+    raw_password = get_random_string(_TEMP_PASSWORD_LENGTH)
     first_name, _, last_name = full_name.strip().partition(" ")
-    patient = User(
+    patient = User.objects.create_user(
         username=_unique_username(full_name),
+        password=raw_password,
         role=Role.PATIENT,
         is_approved=True,
         first_name=first_name,
         last_name=last_name,
     )
-    patient.set_unusable_password()
-    patient.save()
-    return EmergencyIntake.objects.create(
+    intake = EmergencyIntake.objects.create(
         patient=patient,
         admitted_by=admitted_by,
         presenting_complaint=presenting_complaint,
     )
+    return intake, raw_password

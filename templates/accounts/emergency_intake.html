@@ -10,11 +10,24 @@
       <h2 class="text-sm font-semibold text-emerald-800">Patient admitted</h2>
       <p class="mt-1 text-sm text-slate-700">
         Record created for
-        <span class="font-semibold">{{ admitted.patient.get_full_name|default:admitted.patient.username }}</span>
-        under the reference
-        <code class="rounded bg-white px-1.5 py-0.5 text-emerald-700">{{ admitted.patient.username }}</code>.
+        <span class="font-semibold">{{ admitted.patient.get_full_name|default:admitted.patient.username }}</span>.
         The account is approved and ready for readings and orders.
       </p>
+      {% if raw_password %}
+        <dl class="mt-3 grid gap-3 rounded-lg bg-white p-4 text-sm ring-1 ring-emerald-100 sm:grid-cols-2">
+          <div>
+            <dt class="text-slate-500">Username</dt>
+            <dd class="font-mono font-semibold text-slate-800">{{ admitted.patient.username }}</dd>
+          </div>
+          <div>
+            <dt class="text-slate-500">Temporary password</dt>
+            <dd class="font-mono font-semibold text-slate-800">{{ raw_password }}</dd>
+          </div>
+        </dl>
+        <p class="mt-2 text-xs text-emerald-800">
+          Copy these now — the password is shown once and cannot be retrieved again.
+        </p>
+      {% endif %}
     </div>
   {% endif %}
 
@@ -38,9 +51,27 @@
       </button>
     </form>
     <p class="mt-4 text-xs text-slate-500">
-      Emergency admissions skip the administrator approval queue. Demographics
-      and login credentials can be filled in once the patient is stable.
+      Emergency admissions skip the administrator approval queue and are
+      provisioned with a login on the spot. Full demographics can be filled in
+      once the patient is stable.
     </p>
   </div>
+
+  {% if recent_intakes %}
+    <div class="mt-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <h2 class="text-sm font-semibold text-slate-700">Recent admissions</h2>
+      <ul class="mt-3 divide-y divide-slate-100 text-sm">
+        {% for intake in recent_intakes %}
+          <li class="flex items-center justify-between py-2">
+            <span class="font-medium text-slate-800">
+              {{ intake.patient.get_full_name|default:intake.patient.username }}
+              <span class="font-mono text-xs text-slate-400">{{ intake.patient.username }}</span>
+            </span>
+            <span class="text-slate-500">{{ intake.created_at|date:"M d, H:i" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -41,15 +41,27 @@ class EmergencyIntakeView(EmergencyRequiredMixin, FormView):
 
     template_name = "accounts/emergency_intake.html"
     form_class = EmergencyIntakeForm
+    recent_limit = 8
 
     def form_valid(self, form):
-        intake = admit_emergency_patient(
+        intake, raw_password = admit_emergency_patient(
             full_name=form.cleaned_data["full_name"],
             admitted_by=self.request.user,
             presenting_complaint=form.cleaned_data["presenting_complaint"],
         )
-        context = self.get_context_data(form=self.form_class(), admitted=intake)
+        # The password is rendered once and never stored raw, so it cannot
+        # leak through a later request.
+        context = self.get_context_data(
+            form=self.form_class(), admitted=intake, raw_password=raw_password
+        )
         return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["recent_intakes"] = self.request.user.emergency_admissions.select_related(
+            "patient"
+        )[: self.recent_limit]
+        return context
 
 
 class AdminRequiredMixin(RoleRequiredMixin):
