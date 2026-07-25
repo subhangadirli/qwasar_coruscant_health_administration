@@ -15,4 +15,15 @@ urlpatterns = [
     path(
         "<int:pk>/cancel/", views.CancelOrderView.as_view(), name="cancel_order"
     ),
+    path("queue/", views.DepartmentQueueView.as_view(), name="department_queue"),
+    path(
+        "queue/<int:pk>/",
+        views.DepartmentOrderDetailView.as_view(),
+        name="department_order",
+    ),
+    path(
+        "queue/<int:pk>/start/",
+        views.StartOrderView.as_view(),
+        name="start_order",
+    ),
 ]

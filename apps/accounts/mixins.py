@@ -52,6 +52,10 @@ class DoctorRequiredMixin(RoleRequiredMixin):
     allowed_roles = (Role.DOCTOR,)
 
 
+class DepartmentRequiredMixin(RoleRequiredMixin):
+    allowed_roles = (Role.DEPARTMENT,)
+
+
 class AssignedPatientMixin(DoctorRequiredMixin):
     """Resolve a patient only through this doctor's active assignments.
 

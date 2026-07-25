@@ -63,6 +63,15 @@ class ServiceOrderQuerySet(models.QuerySet):
     def closed(self):
         return self.exclude(status__in=OPEN_STATUSES)
 
+    def for_departments_of(self, user):
+        """Orders belonging to the department(s) this user staffs.
+
+        Scoping the queue this way means a department account can only
+        ever act on its own work, and never learns of an order it has no
+        business seeing.
+        """
+        return self.filter(department__staff=user)
+
 
 class ServiceOrder(models.Model):
     """A doctor's request for a department to perform a procedure.

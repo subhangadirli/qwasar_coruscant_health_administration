@@ -115,7 +115,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > the department queue, execution and results are M4.
 
 ### M4 — Department & orders lifecycle
-- [ ] Department order queue (receive).
+- [x] Department order queue (receive).
 - [ ] Execute + upload result (with document).
 - [ ] Status transitions surfaced to doctor & patient.
 - [ ] Tests.
