@@ -29,6 +29,9 @@
             {% elif user.role == 'patient' %}
               <a href="{% url 'records:readings' %}" class="opacity-80 hover:opacity-100">Readings</a>
               <a href="{% url 'records:reports' %}" class="opacity-80 hover:opacity-100">Reports</a>
+              <a href="{% url 'orders:patient_orders' %}" class="opacity-80 hover:opacity-100">Orders</a>
+            {% elif user.role == 'department' %}
+              <a href="{% url 'orders:department_queue' %}" class="opacity-80 hover:opacity-100">Queue</a>
             {% endif %}
           {% endif %}
           <span class="opacity-80">{{ user.username }} · {{ user.get_role_display }}</span>

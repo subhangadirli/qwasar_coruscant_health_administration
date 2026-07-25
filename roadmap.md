@@ -117,7 +117,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ### M4 — Department & orders lifecycle
 - [x] Department order queue (receive).
 - [x] Execute + upload result (with document).
-- [ ] Status transitions surfaced to doctor & patient.
+- [x] Status transitions surfaced to doctor & patient.
 - [ ] Tests.
 
 > The `ServiceOrder` model and its transitions (`start`, `complete`,

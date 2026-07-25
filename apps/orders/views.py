@@ -10,7 +10,9 @@ from apps.accounts.mixins import (
     AssignedPatientMixin,
     DepartmentRequiredMixin,
     DoctorRequiredMixin,
+    RoleRequiredMixin,
 )
+from apps.accounts.models import Role
 
 from .forms import OrderResultForm, ServiceOrderForm
 from .models import OrderResult, OrderStatus, ServiceOrder
@@ -161,6 +163,34 @@ class CompleteOrderView(DepartmentQueueMixin, View):
         return render(
             self.request, "orders/department_order_detail.html", context
         )
+
+
+class PatientOrdersMixin(RoleRequiredMixin):
+    """Restrict orders to the ones placed for the logged-in patient.
+
+    Scoping the queryset means another patient's order is a 404, never a
+    check that runs after the record is fetched.
+    """
+
+    allowed_roles = (Role.PATIENT,)
+
+    def get_queryset(self):
+        return self.request.user.service_orders.select_related(
+            "department", "doctor", "result"
+        )
+
+
+class PatientOrdersView(PatientOrdersMixin, ListView):
+    """A patient's own service orders, read-only."""
+
+    template_name = "orders/patient_orders.html"
+    context_object_name = "orders"
+    paginate_by = 25
+
+
+class PatientOrderDetailView(PatientOrdersMixin, DetailView):
+    template_name = "orders/patient_order_detail.html"
+    context_object_name = "order"
 
 
 class OrderResultDownloadView(LoginRequiredMixin, View):

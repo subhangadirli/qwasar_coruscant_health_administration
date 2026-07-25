@@ -36,4 +36,10 @@ urlpatterns = [
         views.OrderResultDownloadView.as_view(),
         name="download_result",
     ),
+    path("my/", views.PatientOrdersView.as_view(), name="patient_orders"),
+    path(
+        "my/<int:pk>/",
+        views.PatientOrderDetailView.as_view(),
+        name="patient_order",
+    ),
 ]
