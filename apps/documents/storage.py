@@ -7,11 +7,11 @@ through an access-checked view. Moving to a KMS-backed or S3 store later means
 replacing this class, not the models or views that use it.
 """
 
+from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
-from cryptography.fernet import Fernet, InvalidToken
 
 
 class EncryptedFileSystemStorage(FileSystemStorage):

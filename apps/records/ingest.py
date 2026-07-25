@@ -4,7 +4,7 @@ Keeping one implementation means the API cannot quietly accept a value the
 CSV importer would have rejected.
 """
 
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -36,8 +36,8 @@ def parse_reading_row(row):
     raw_value = _as_text(row.get("value"))
     try:
         value = Decimal(raw_value)
-    except (InvalidOperation, ValueError):
-        raise ValueError(f"value {raw_value!r} is not a number.")
+    except (InvalidOperation, ValueError) as exc:
+        raise ValueError(f"value {raw_value!r} is not a number.") from exc
     if not value.is_finite():
         raise ValueError("value must be a finite number.")
     if value < 0:

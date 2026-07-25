@@ -69,7 +69,7 @@ class ReadingCSVUploadForm(forms.Form):
         try:
             text = upload.read().decode("utf-8-sig")
         except UnicodeDecodeError:
-            raise forms.ValidationError("File must be UTF-8 encoded text.")
+            raise forms.ValidationError("File must be UTF-8 encoded text.") from None
         self.parsed_rows = self._parse(text)
         return upload
 
@@ -82,7 +82,7 @@ class ReadingCSVUploadForm(forms.Form):
         missing = CSV_REQUIRED_COLUMNS - header
         if missing:
             raise forms.ValidationError(
-                "Missing required column(s): %s." % ", ".join(sorted(missing))
+                "Missing required column(s): {}.".format(", ".join(sorted(missing)))
             )
 
         rows, errors = [], []

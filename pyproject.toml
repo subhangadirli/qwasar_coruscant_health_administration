@@ -1,0 +1,23 @@
+[tool.ruff]
+# Deterministic lint config so local and CI agree. Generated files and the
+# virtualenv are excluded; migrations are Django-authored and left as-is.
+line-length = 100
+target-version = "py312"
+extend-exclude = ["venv", "**/migrations/*"]
+
+[tool.ruff.lint]
+# A pragmatic set: pycodestyle errors, pyflakes, import sorting, pyupgrade,
+# and flake8-bugbear. Intentionally excludes the noisier RUF/FURB families.
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Settings modules re-export everything from base via a star import.
+"config/settings/*.py" = ["F403", "F405"]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests.py", "*/test_*.py", "apps/*/test_*.py"]
+
+[tool.coverage.report]
+# Test modules exercise the code; excluding them keeps the number honest.
+exclude_lines = ["pragma: no cover", "raise NotImplementedError"]

@@ -178,7 +178,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > now — a build step is the one thing still deferred to M8.
 
 ### M8 — CI/CD & deployment
-- [ ] GitHub/Gitea Actions: lint (`ruff`/`flake8`) + tests + coverage gate.
+- [x] GitHub/Gitea Actions: lint (`ruff`/`flake8`) + tests + coverage gate.
 - [ ] Auto-deploy on main/dev merge.
 - [ ] Provision Postgres + object storage in cloud.
 - [ ] `collectstatic`, migrations on deploy, env secrets.
