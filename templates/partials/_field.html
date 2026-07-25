@@ -1,0 +1,20 @@
+{% comment %}
+One form field — label, widget, help text, and errors — with consistent
+markup and accessibility. Render with:
+  {% include "partials/_field.html" with field=form.some_field %}
+or over a whole form:
+  {% for field in form %}{% include "partials/_field.html" %}{% endfor %}
+Input styling lives in base.html under the `.field` wrapper.
+{% endcomment %}
+<div class="field{% if field.errors %} has-error{% endif %}">
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">
+    {{ field.label }}{% if field.field.required %} <span class="text-red-500" aria-hidden="true">*</span>{% endif %}
+  </label>
+  <div class="mt-1">{{ field }}</div>
+  {% if field.help_text %}
+    <p class="mt-1 text-xs text-slate-500">{{ field.help_text|safe }}</p>
+  {% endif %}
+  {% for error in field.errors %}
+    <p class="mt-1 text-xs text-red-600" role="alert">{{ error }}</p>
+  {% endfor %}
+</div>

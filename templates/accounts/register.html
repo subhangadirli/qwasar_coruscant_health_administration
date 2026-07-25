@@ -11,18 +11,12 @@
 
   <form method="post" class="mt-6 space-y-4">
     {% csrf_token %}
-    {% for field in form %}
-      <div>
-        <label class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <p class="mt-1 text-xs text-red-600">{{ field.errors|striptags }}</p>
-        {% endif %}
-        {% if field.help_text %}
-          <p class="mt-1 text-xs text-slate-400">{{ field.help_text|safe }}</p>
-        {% endif %}
+    {% if form.non_field_errors %}
+      <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+        {{ form.non_field_errors }}
       </div>
-    {% endfor %}
+    {% endif %}
+    {% for field in form %}{% include "partials/_field.html" %}{% endfor %}
     <button type="submit" class="w-full rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-500">
       Register
     </button>
@@ -32,9 +26,4 @@
     Already registered? <a href="{% url 'accounts:login' %}" class="text-emerald-600 hover:underline">Log in</a>
   </p>
 </div>
-
-<style>
-  input, select { width:100%; border:1px solid #cbd5e1; border-radius:0.5rem; padding:0.5rem 0.75rem; margin-top:0.25rem; background:#fff; }
-  input:focus, select:focus { outline:2px solid #10b981; outline-offset:1px; }
-</style>
 {% endblock %}

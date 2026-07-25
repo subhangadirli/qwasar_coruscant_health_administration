@@ -161,7 +161,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 > default, prod fail-fast) were already in place from the scaffold.
 
 ### M7 — UI/UX polish
-- [ ] Consistent responsive design, role-aware nav.
+- [x] Consistent responsive design, role-aware nav.
 - [ ] Empty/error/loading states, form validation UX.
 - [ ] Accessibility pass.
 

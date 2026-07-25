@@ -14,12 +14,7 @@
 
   <form method="post" class="mt-6 space-y-4">
     {% csrf_token %}
-    {% for field in form %}
-      <div>
-        <label class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
-        {{ field }}
-      </div>
-    {% endfor %}
+    {% for field in form %}{% include "partials/_field.html" %}{% endfor %}
     <button type="submit" class="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800">
       Log in
     </button>
@@ -29,9 +24,4 @@
     No account? <a href="{% url 'accounts:register' %}" class="text-emerald-600 hover:underline">Register</a>
   </p>
 </div>
-
-<style>
-  input { width:100%; border:1px solid #cbd5e1; border-radius:0.5rem; padding:0.5rem 0.75rem; margin-top:0.25rem; }
-  input:focus { outline:2px solid #10b981; outline-offset:1px; }
-</style>
 {% endblock %}
