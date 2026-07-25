@@ -185,7 +185,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] **Write live URL to `my_coruscant_health_administration_url.txt` (URL only).**
 
 > CI runs on GitHub Actions (`.github/workflows/ci.yml`): `ruff` lint, the full
-> test suite, and a `coverage report --fail-under=95` gate (currently 99%). The
+> test suite, and a `coverage report --fail-under=95` gate (currently 97%). The
 > app is hosted on Heroku from the GitHub `dev` branch — `Procfile` runs gunicorn
 > for `web` and `manage.py migrate` on `release`, `.python-version` pins Python
 > 3.12, and `app.json` declares the Heroku Postgres add-on. `dj-database-url`
@@ -200,7 +200,24 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] Security review (HTTPS, CSRF, secure cookies, `DEBUG=False`, ALLOWED_HOSTS).
 - [x] Seed/demo data & admin account.
 - [x] Coverage report; finalize docs.
-- [ ] Peer-review readiness.
+- [x] Peer-review readiness.
+
+> The security review confirmed `check --deploy` passes clean against
+> `config.settings.prod` (SSL redirect, HSTS, secure/HTTPOnly cookies,
+> `DEBUG=False`, env-driven `ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS`), and closed
+> the last checklist gap by adding the `apps.audit` trail for logins, approvals,
+> rejections, emergency intakes, report publications and document downloads.
+> `python manage.py seed_demo` builds an idempotent walkthrough dataset (doctor,
+> patients with a week of readings, a published report and a draft prescription,
+> a completed order with a result and an open order, plus pending accounts for
+> the approval queue) and prints the demo logins. Docs are finalized: README
+> covers the live URL, CI/coverage (263 tests, 97%), deployment and security;
+> `DEPLOY.md` is the Heroku runbook. A reviewer can clone, `pip install -r
+> requirements-dev.txt`, `migrate`, `seed_demo`, and have the whole system
+> running locally or hit the live deploy. The one intentional follow-up is
+> durable S3 document storage (Heroku's filesystem is ephemeral); it sits behind
+> the M6 storage seam and needs only the storage class swapped, not the models,
+> views, or access checks.
 
 ---
 
