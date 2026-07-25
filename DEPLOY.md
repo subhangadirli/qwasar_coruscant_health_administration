@@ -40,6 +40,19 @@ secrets are missing.
 
 `DATABASE_URL` is set automatically by the Postgres add-on (see below).
 
+## Demo data (optional)
+
+To populate a coherent walkthrough dataset (doctor, patients, readings, reports,
+a completed and an open order, plus pending accounts for the approval queue), run
+the idempotent seed command — in the Heroku *More → Run console*:
+
+```
+python manage.py seed_demo
+```
+
+It prints the demo usernames and their shared password. Safe to re-run; it never
+duplicates rows. Do not run it against real data.
+
 ## Data stores
 
 ### Postgres (provisioned)

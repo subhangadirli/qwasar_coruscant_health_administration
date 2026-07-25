@@ -198,7 +198,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 
 ### M9 — Hardening & handoff
 - [x] Security review (HTTPS, CSRF, secure cookies, `DEBUG=False`, ALLOWED_HOSTS).
-- [ ] Seed/demo data & admin account.
+- [x] Seed/demo data & admin account.
 - [ ] Coverage report; finalize docs.
 - [ ] Peer-review readiness.
 
