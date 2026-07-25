@@ -1,0 +1,32 @@
+{
+  "name": "Coruscant Health Administration",
+  "description": "Medical Management System — Django, encrypted document storage, RBAC.",
+  "repository": "https://github.com/",
+  "keywords": ["django", "healthcare", "python"],
+  "stack": "heroku-24",
+  "buildpacks": [{ "url": "heroku/python" }],
+  "addons": ["heroku-postgresql:essential-0"],
+  "scripts": {
+    "postdeploy": "python manage.py migrate --noinput"
+  },
+  "env": {
+    "DJANGO_SETTINGS_MODULE": {
+      "value": "config.settings.prod"
+    },
+    "SECRET_KEY": {
+      "description": "Django secret key.",
+      "generator": "secret"
+    },
+    "DOCUMENT_ENCRYPTION_KEY": {
+      "description": "urlsafe-base64 Fernet key (32 bytes) for at-rest document encryption. Generate with: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+    },
+    "ALLOWED_HOSTS": {
+      "description": "Comma-separated hostnames, e.g. your-app.herokuapp.com",
+      "required": true
+    },
+    "CSRF_TRUSTED_ORIGINS": {
+      "description": "Comma-separated origins, e.g. https://your-app.herokuapp.com",
+      "required": true
+    }
+  }
+}

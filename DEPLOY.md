@@ -40,4 +40,28 @@ secrets are missing.
 
 `DATABASE_URL` is set automatically by the Postgres add-on (see below).
 
+## Data stores
+
+### Postgres (provisioned)
+
+*Resources* tab → add **Heroku Postgres** (`essential-0` tier is enough for the
+MVP). Heroku injects `DATABASE_URL`, which `config/settings/base.py` reads via
+`dj-database-url` — no code change needed to switch from local SQLite to cloud
+Postgres. `app.json` declares this add-on so a *Deploy to Heroku* provision
+attaches it automatically.
+
+### Document storage (encrypted, on-dyno)
+
+Uploaded documents are Fernet-encrypted at rest by
+`documents.storage.EncryptedFileSystemStorage` (M6). **Heroku's filesystem is
+ephemeral** — files written by a dyno do not survive a restart or redeploy, so
+on-dyno storage is only appropriate for a demo/MVP deploy.
+
+For durable storage, swap the storage backend for S3 (or another object store)
+without touching the models, views, or access checks: point
+`EncryptedFileSystemStorage` at an S3 base (or subclass Django's S3 storage),
+add the bucket credentials as config vars, and downloads keep flowing through
+the same access-checked `download_document` view. That swap is the M6 design
+seam and is deliberately left as a follow-up.
+
 [buildpack]: https://devcenter.heroku.com/articles/python-support
