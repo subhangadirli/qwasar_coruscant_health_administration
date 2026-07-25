@@ -14,6 +14,9 @@ PostgreSQL in production). Server-rendered templates styled with Tailwind and
 enhanced with HTMX. Role-based access control with an administrator approval
 gate for patient and doctor registrations. See `roadmap.md` for the full plan.
 
+**Live demo:** https://qwasar-coruscant-health-admin-3434f9723bec.herokuapp.com
+(the URL is also in `my_coruscant_health_administration_url.txt`).
+
 ## Installation
 ```
 python3 -m venv venv
@@ -80,9 +83,25 @@ apps/accounts      custom User model, roles, approval gate, assignments
 apps/records       health readings, device tokens, reports, prescriptions
 apps/orders        departments and service orders
 apps/documents     encrypted document upload/storage
-apps/dashboard     landing + role dashboards
+apps/dashboard     landing + role dashboards + seed_demo command
+apps/audit         append-only audit log for sensitive actions
 templates/         base + page templates
 ```
+
+## Deployment, CI & tests
+- **CI** (`.github/workflows/ci.yml`) runs `ruff` lint, the full test suite, and
+  a coverage gate on every push/PR (`coverage report --fail-under=95`; current
+  coverage **97%**, 263 tests). Install the tooling with
+  `pip install -r requirements-dev.txt`.
+- **Deployment** is on Heroku from the GitHub `dev` branch — see `DEPLOY.md` for
+  the full walkthrough (Procfile, Postgres add-on, config vars, WhiteNoise
+  static, release-phase migrations).
+- **Demo data:** `python manage.py seed_demo` populates a coherent, idempotent
+  walkthrough dataset and prints the demo logins.
+- **Security:** documents are Fernet-encrypted at rest, downloads go through an
+  access-checked view with a checksum integrity check, and sensitive actions
+  (logins, approvals, publications, downloads) are recorded in the audit log.
+  `python manage.py check --deploy` passes clean against `config.settings.prod`.
 
 ### The Core Team
 Subhan Gadirli · Zahra Suleymanli

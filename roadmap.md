@@ -199,7 +199,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ### M9 — Hardening & handoff
 - [x] Security review (HTTPS, CSRF, secure cookies, `DEBUG=False`, ALLOWED_HOSTS).
 - [x] Seed/demo data & admin account.
-- [ ] Coverage report; finalize docs.
+- [x] Coverage report; finalize docs.
 - [ ] Peer-review readiness.
 
 ---
@@ -230,7 +230,7 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 ## 6. Deliverables (grading-facing)
 - [x] Working Django app in the repo.
 - [x] `my_coruscant_health_administration_url.txt` — live URL only.
-- [x] Unit tests (251 passing).
+- [x] Unit tests (263 passing, 97% coverage).
 - [x] Passing CI.
 - [x] Completed `README.md`.
 - [x] This `roadmap.md`.
