@@ -182,7 +182,19 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 - [x] Auto-deploy on main/dev merge.
 - [x] Provision Postgres + object storage in cloud.
 - [x] `collectstatic`, migrations on deploy, env secrets.
-- [ ] **Write live URL to `my_coruscant_health_administration_url.txt` (URL only).**
+- [x] **Write live URL to `my_coruscant_health_administration_url.txt` (URL only).**
+
+> CI runs on GitHub Actions (`.github/workflows/ci.yml`): `ruff` lint, the full
+> test suite, and a `coverage report --fail-under=95` gate (currently 99%). The
+> app is hosted on Heroku from the GitHub `dev` branch — `Procfile` runs gunicorn
+> for `web` and `manage.py migrate` on `release`, `.python-version` pins Python
+> 3.12, and `app.json` declares the Heroku Postgres add-on. `dj-database-url`
+> reads `DATABASE_URL`, WhiteNoise serves the `collectstatic` output, and all
+> secrets are Heroku config vars (`config.settings.prod` fails fast without them).
+> Deployment steps live in `DEPLOY.md`. Live at
+> https://qwasar-coruscant-health-admin-3434f9723bec.herokuapp.com — document
+> storage is encrypted-on-dyno for the MVP (ephemeral filesystem); the durable
+> S3 swap is the documented follow-up behind the same storage seam.
 
 ### M9 — Hardening & handoff
 - [ ] Security review (HTTPS, CSRF, secure cookies, `DEBUG=False`, ALLOWED_HOSTS).
@@ -215,9 +227,9 @@ document storage, cloud-hosted with CI/CD, and unit tests throughout.
 
 ## 6. Deliverables (grading-facing)
 - [x] Working Django app in the repo.
-- [ ] `my_coruscant_health_administration_url.txt` — live URL only.
+- [x] `my_coruscant_health_administration_url.txt` — live URL only.
 - [x] Unit tests (251 passing).
-- [ ] Passing CI.
+- [x] Passing CI.
 - [x] Completed `README.md`.
 - [x] This `roadmap.md`.
 
